@@ -73,6 +73,9 @@
             padding: 20px 0;
             margin-top: auto;
         }
+        .logout-form {
+            display: inline;
+        }
     </style>
 </head>
 <body>
@@ -85,7 +88,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                        <form th:action="@{/logout}" method="post" class="logout-form">
+                            <button type="submit" class="nav-link btn btn-link text-white" style="background: none; border: none; padding: 0;">Logout</button>
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -96,7 +101,9 @@
         <div class="sidebar">
             <a th:href="@{/member/dashboard}">Dashboard</a>
             <a th:href="@{/member/profile}" class="active">Profile</a>
-            <a th:href="@{/logout}">Logout</a>
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <button type="submit" class="btn btn-link text-white w-100 text-start" style="background: none; border: none; padding: 12px 20px; text-decoration: none;">Logout</button>
+            </form>
         </div>
         <div class="main-content">
             <h2 class="mb-4" style="color: #1a3c5e;">Profil Anda</h2>
@@ -112,24 +119,57 @@
                                 <input type="text" class="form-control" id="namaLengkap" th:field="*{namaLengkap}" readonly>
                             </div>
                             <div class="mb-3">
+                                <label for="username" class="form-label">NIM</label>
+                                <input type="text" class="form-control" id="username" th:value="${member.username}" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" th:value="${member.email}" readonly>
+                            </div>
+                            <div class="mb-3">
                                 <label for="jenisKelamin" class="form-label">Jenis Kelamin</label>
                                 <select class="form-select" id="jenisKelamin" th:field="*{jenisKelamin}" required>
                                     <option value="">Pilih Jenis Kelamin</option>
-                                    <option th:value="Laki-laki" th:selected="${profile.jenisKelamin == 'Laki-laki'}">Laki-laki</option>
-                                    <option th:value="Perempuan" th:selected="${profile.jenisKelamin == 'Perempuan'}">Perempuan</option>
+                                    <option value="Laki-laki" th:selected="${profile.jenisKelamin == 'Laki-laki'}">Laki-laki</option>
+                                    <option value="Perempuan" th:selected="${profile.jenisKelamin == 'Perempuan'}">Perempuan</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fakultas" class="form-label">Fakultas</label>
+                                <select class="form-select" id="fakultas" th:field="*{fakultas}" required>
+                                    <option value="">Pilih Fakultas</option>
+                                    <option value="Sains dan Teknologi" th:selected="${profile.fakultas == 'Sains dan Teknologi'}">Sains dan Teknologi</option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label for="programStudi" class="form-label">Program Studi</label>
-                                <input type="text" class="form-control" id="programStudi" th:field="*{programStudi}">
-                            </div>
-                            <div class="mb-3">
-                                <label for="fakultas" class="form-label">Fakultas</label>
-                                <input type="text" class="form-control" id="fakultas" th:field="*{fakultas}">
+                                <select class="form-select" id="programStudi" th:field="*{programStudi}" required>
+                                    <option value="">Pilih Program Studi</option>
+                                    <option value="Agribisnis" th:selected="${profile.programStudi == 'Agribisnis'}">Agribisnis</option>
+                                    <option value="Matematika" th:selected="${profile.programStudi == 'Matematika'}">Matematika</option>
+                                    <option value="Fisika" th:selected="${profile.programStudi == 'Fisika'}">Fisika</option>
+                                    <option value="Kimia" th:selected="${profile.programStudi == 'Kimia'}">Kimia</option>
+                                    <option value="Biologi" th:selected="${profile.programStudi == 'Biologi'}">Biologi</option>
+                                    <option value="Teknik Informatika" th:selected="${profile.programStudi == 'Teknik Informatika'}">Teknik Informatika</option>
+                                    <option value="Sistem Informasi" th:selected="${profile.programStudi == 'Sistem Informasi'}">Sistem Informasi</option>
+                                </select>
                             </div>
                             <div class="mb-4">
                                 <label for="tahunAngkatan" class="form-label">Tahun Angkatan</label>
-                                <input type="text" class="form-control" id="tahunAngkatan" th:field="*{tahunAngkatan}" pattern="\d{4}" title="Masukkan 4 digit tahun (contoh: 2020)">
+                                <select class="form-select" id="tahunAngkatan" th:field="*{tahunAngkatan}" required>
+                                    <option value="">Pilih Tahun Angkatan</option>
+                                    <option value="2015" th:selected="${profile.tahunAngkatan == '2015'}">2015</option>
+                                    <option value="2016" th:selected="${profile.tahunAngkatan == '2016'}">2016</option>
+                                    <option value="2017" th:selected="${profile.tahunAngkatan == '2017'}">2017</option>
+                                    <option value="2018" th:selected="${profile.tahunAngkatan == '2018'}">2018</option>
+                                    <option value="2019" th:selected="${profile.tahunAngkatan == '2019'}">2019</option>
+                                    <option value="2020" th:selected="${profile.tahunAngkatan == '2020'}">2020</option>
+                                    <option value="2021" th:selected="${profile.tahunAngkatan == '2021'}">2021</option>
+                                    <option value="2022" th:selected="${profile.tahunAngkatan == '2022'}">2022</option>
+                                    <option value="2023" th:selected="${profile.tahunAngkatan == '2023'}">2023</option>
+                                    <option value="2024" th:selected="${profile.tahunAngkatan == '2024'}">2024</option>
+                                    <option value="2025" th:selected="${profile.tahunAngkatan == '2025'}">2025</option>
+                                </select>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">Simpan Perubahan</button>
                         </form>

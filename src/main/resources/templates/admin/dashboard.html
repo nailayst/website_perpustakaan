@@ -101,7 +101,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                        <form th:action="@{/logout}" method="post" class="logout-form">
+                            <button type="submit" class="nav-link btn btn-link text-white" style="background: none; border: none; padding: 0;">Logout</button>
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -120,7 +122,9 @@
                     <li><a class="dropdown-item" th:href="@{/admin/add-user}">Tambah User</a></li>
                 </ul>
             </div>
-            <a th:href="@{/logout}">Logout</a>
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <button type="submit" class="btn btn-link text-white w-100 text-start" style="background: none; border: none; padding: 12px 20px; text-decoration: none;">Logout</button>
+            </form>
         </div>
         <div class="main-content">
             <h2 class="mb-4" style="color: #1a3c5e;">Selamat Datang, <span th:text="${admin.profile?.namaLengkap} ?: 'Admin'"></span>!</h2>

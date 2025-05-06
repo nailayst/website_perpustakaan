@@ -22,7 +22,7 @@ public class MainController {
     }
     
     @GetMapping("/login")
-    public String login() {
+    public String login(Model model) {
         return "auth/login";
     }
     
@@ -74,7 +74,7 @@ public class MainController {
             return "redirect:/login";
         }
         model.addAttribute("user", user);
-        if (user.getLevelUser().getLevelUser().equals("admin")) {
+        if (user.getLevelUser() != null && "admin".equals(user.getLevelUser().getLevelUser())) {
             return "redirect:/admin/dashboard";
         } else {
             return "redirect:/member/dashboard";

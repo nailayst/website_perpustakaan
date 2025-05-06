@@ -34,10 +34,11 @@ public class UserService {
     }
     
     public void registerUser(User user, Profile profile) {
-        if (user.getUsername().length() != 14 || !user.getUsername().matches("\\d+")) {
+        System.out.println("=== DEBUG: Registering user: " + user.getUsername() + ", email: " + user.getEmail());
+        if (user.getUsername() == null || user.getUsername().length() != 14 || !user.getUsername().matches("\\d+")) {
             throw new IllegalArgumentException("NIM harus 14 digit angka");
         }
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+        if (user.getEmail() == null || !user.getEmail().contains("@") || !user.getEmail().contains(".")) {
             throw new IllegalArgumentException("Email tidak valid");
         }
         if (userRepository.existsByUsername(user.getUsername())) {
@@ -48,7 +49,8 @@ public class UserService {
         }
         
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        
+        user.setEmail(user.getEmail()); // Pastikan email disimpan
+
         Validasi validasi = new Validasi();
         validasi.setStatus(0);
         String token = UUID.randomUUID().toString();
@@ -61,7 +63,9 @@ public class UserService {
             user.setLevelUser(levelUser);
         }
         
-        profile.setNamaLengkap(profile.getNamaLengkap());
+        if (profile.getNamaLengkap() == null) {
+            profile.setNamaLengkap(user.getUsername()); // Default nama dari username
+        }
         profileRepository.save(profile);
         
         user.setValidasi(validasi);
@@ -85,8 +89,10 @@ public class UserService {
         if (validasi != null && validasi.getStatus() == 0) {
             validasi.setStatus(1);
             validasiRepository.save(validasi);
+            System.out.println("=== DEBUG: User verified with token: " + token);
             return true;
         }
+        System.out.println("=== DEBUG: Verification failed for token: " + token);
         return false;
     }
 

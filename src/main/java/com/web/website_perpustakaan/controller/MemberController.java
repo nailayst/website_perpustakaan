@@ -49,10 +49,10 @@ public class MemberController {
             return "redirect:/login";
         }
 
-        // Pastikan profile ada
         Profile profile = member.getProfile();
         if (profile == null) {
             profile = new Profile();
+            profile.setNamaLengkap(member.getUsername()); // Default nama dari username
             member.setProfile(profile);
             userService.saveUser(member);
         }
@@ -75,20 +75,17 @@ public class MemberController {
             return "redirect:/login";
         }
 
-        // Pastikan profile ada
         Profile existingProfile = member.getProfile();
         if (existingProfile == null) {
             existingProfile = new Profile();
             member.setProfile(existingProfile);
         }
 
-        // Update field dari form
         existingProfile.setJenisKelamin(profile.getJenisKelamin());
         existingProfile.setProgramStudi(profile.getProgramStudi());
         existingProfile.setFakultas(profile.getFakultas());
         existingProfile.setTahunAngkatan(profile.getTahunAngkatan());
 
-        // Simpan perubahan
         try {
             userService.saveUser(member);
             model.addAttribute("success", true);

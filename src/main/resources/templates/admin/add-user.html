@@ -110,7 +110,9 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/logout}">Logout</a>
+                        <form th:action="@{/logout}" method="post" class="logout-form">
+                            <button type="submit" class="nav-link btn btn-link text-white" style="background: none; border: none; padding: 0;">Logout</button>
+                        </form>
                     </li>
                 </ul>
             </div>
@@ -129,7 +131,9 @@
                     <li><a class="dropdown-item active" th:href="@{/admin/add-user}">Tambah User</a></li>
                 </ul>
             </div>
-            <a th:href="@{/logout}">Logout</a>
+            <form th:action="@{/logout}" method="post" style="margin: 0;">
+                <button type="submit" class="btn btn-link text-white w-100 text-start" style="background: none; border: none; padding: 12px 20px; text-decoration: none;">Logout</button>
+            </form>
         </div>
         <div class="main-content">
             <h2 class="mb-4" style="color: #1a3c5e;">Tambah User Baru</h2>
@@ -145,7 +149,7 @@
                         <form th:action="@{/admin/add-user}" method="post" th:object="${user}">
                             <div class="row mb-3">
                                 <div class="col-md-6">
-                                    <label for="username" class="form-label">NIM (14 digit)</label>
+                                    <label for="username" class="form-label">NIM / NIP</label>
                                     <input type="text" class="form-control" id="username" th:field="*{username}" required>
                                 </div>
                                 <div class="col-md-6">
