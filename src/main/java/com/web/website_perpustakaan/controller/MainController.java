@@ -12,27 +12,27 @@ import org.springframework.web.bind.annotation.*;
 
 @Controller
 public class MainController {
-    
+
     @Autowired
     private UserService userService;
-    
+
     @GetMapping("/")
     public String home() {
         return "index";
     }
-    
+
     @GetMapping("/login")
     public String login(Model model) {
         return "auth/login";
     }
-    
+
     @GetMapping("/register")
     public String showRegisterForm(Model model) {
         model.addAttribute("user", new User());
         model.addAttribute("profile", new Profile());
         return "auth/register";
     }
-    
+
     @PostMapping("/register")
     public String registerUser(@ModelAttribute User user, @ModelAttribute Profile profile, Model model) {
         try {
@@ -48,7 +48,7 @@ public class MainController {
         }
         return "auth/register";
     }
-    
+
     @GetMapping("/verify")
     public String verifyUser(@RequestParam String token, Model model) {
         if (userService.verifyUser(token)) {
@@ -61,7 +61,7 @@ public class MainController {
             return "auth/verify";
         }
     }
-    
+
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -74,7 +74,7 @@ public class MainController {
             return "redirect:/login";
         }
         model.addAttribute("user", user);
-        if (user.getLevelUser() != null && "admin".equals(user.getLevelUser().getLevelUser())) {
+        if (user.getLevelUser() != null && "admin".equalsIgnoreCase(user.getLevelUser().getLevelUser())) {
             return "redirect:/admin/dashboard";
         } else {
             return "redirect:/member/dashboard";

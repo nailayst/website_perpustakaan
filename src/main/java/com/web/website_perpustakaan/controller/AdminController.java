@@ -18,16 +18,16 @@ import java.util.List;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-    
+
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private LevelUserRepository levelUserRepository;
-    
+
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -36,7 +36,8 @@ public class AdminController {
         }
         String username = auth.getName();
         User admin = userService.findByUsername(username);
-        if (admin == null || admin.getLevelUser() == null || !admin.getLevelUser().getLevelUser().equals("admin")) {
+        if (admin == null || admin.getLevelUser() == null || 
+            !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
             return "redirect:/login";
         }
         long totalMembers = userRepository.countByLevelUser_LevelUser("member");
@@ -46,7 +47,7 @@ public class AdminController {
         model.addAttribute("totalAdmins", totalAdmins);
         return "admin/dashboard";
     }
-    
+
     @GetMapping("/users")
     public String listUsers(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -55,14 +56,15 @@ public class AdminController {
         }
         String username = auth.getName();
         User admin = userService.findByUsername(username);
-        if (admin == null || admin.getLevelUser() == null || !admin.getLevelUser().getLevelUser().equals("admin")) {
+        if (admin == null || admin.getLevelUser() == null || 
+            !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
             return "redirect:/login";
         }
         List<User> users = userRepository.findAll();
         model.addAttribute("users", users);
         return "admin/users";
     }
-    
+
     @GetMapping("/add-user")
     public String showAddUserForm(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -71,21 +73,21 @@ public class AdminController {
         }
         String username = auth.getName();
         User admin = userService.findByUsername(username);
-        if (admin == null || admin.getLevelUser() == null || !admin.getLevelUser().getLevelUser().equals("admin")) {
+        if (admin == null || admin.getLevelUser() == null || 
+            !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
             return "redirect:/login";
         }
         model.addAttribute("user", new User());
         model.addAttribute("profile", new Profile());
         return "admin/add-user";
     }
-    
+
     @PostMapping("/add-user")
     public String addUser(@ModelAttribute User user, @ModelAttribute Profile profile, 
                          @RequestParam String role, Model model) {
         try {
-            // Cari level user berdasarkan role
             LevelUser levelUser = levelUserRepository.findByLevelUser(role)
-                .orElseThrow(() -> new IllegalStateException("Level user '" + role + "' tidak ditemukan"));
+                    .orElseThrow(() -> new IllegalStateException("Level user '" + role + "' tidak ditemukan"));
             user.setLevelUser(levelUser);
             userService.registerUser(user, profile);
             model.addAttribute("success", true);

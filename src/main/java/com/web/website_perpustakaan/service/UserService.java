@@ -103,4 +103,18 @@ public class UserService {
     public void saveUser(User user) {
         userRepository.save(user);
     }
+
+    public boolean changePassword(String username, String oldPassword, String newPassword) {
+    User user = userRepository.findByUsername(username);
+    if (user == null) return false;
+
+    if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+        return false;
+    }
+
+    user.setPassword(passwordEncoder.encode(newPassword));
+    userRepository.save(user);
+    return true;
+}
+
 }
