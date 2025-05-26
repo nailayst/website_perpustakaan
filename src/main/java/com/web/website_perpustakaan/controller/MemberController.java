@@ -2,7 +2,9 @@ package com.web.website_perpustakaan.controller;
 
 import com.web.website_perpustakaan.model.Profile;
 import com.web.website_perpustakaan.model.User;
+import com.web.website_perpustakaan.model.Buku;
 import com.web.website_perpustakaan.service.UserService;
+import com.web.website_perpustakaan.service.BukuService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 @RequestMapping("/member")
@@ -20,6 +23,9 @@ public class MemberController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private BukuService bukuService;
 
     // ========================= DASHBOARD =========================
     @GetMapping("/dashboard")
@@ -34,8 +40,40 @@ public class MemberController {
 
         if (user == null) return "redirect:/login";
 
+        // Ambil daftar buku dari BukuService
+        List<Buku> daftarBuku = bukuService.getSemuaBuku();
+
         model.addAttribute("member", user);
+        model.addAttribute("daftarBuku", daftarBuku);
         return "member/dashboard";
+    }
+
+    // ========================= DETAIL BUKU =========================
+    @GetMapping("/buku/{id}")
+    public String detailBuku(@PathVariable("id") Long id, Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+
+        if (user == null) return "redirect:/login";
+
+        // Ambil buku berdasarkan ID
+        Buku buku = bukuService.getSemuaBuku().stream()
+                .filter(b -> b.getBukuId().equals(id))
+                .findFirst()
+                .orElse(null);
+
+        if (buku == null) {
+            return "redirect:/member/dashboard";
+        }
+
+        model.addAttribute("member", user);
+        model.addAttribute("buku", buku);
+        return "member/detail-buku";
     }
 
     // ========================= TAMPIL PROFIL =========================
@@ -121,5 +159,4 @@ public class MemberController {
 
         return "redirect:/member/profile";
     }
-
 }

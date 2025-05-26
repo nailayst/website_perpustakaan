@@ -18,6 +18,12 @@
             z-index: 1000;
             background-color: #1a3c5e;
         }
+        .navbar-brand, .navbar-nav .nav-link {
+            color: #f8f9fa;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #ffca2c;
+        }
         .sidebar {
             min-height: 100vh;
             background-color: #1a3c5e;
@@ -41,6 +47,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             flex: 1;
+            margin: 20px;
         }
         .card {
             border: 1px solid #ddd;
@@ -77,6 +84,25 @@
             color: #f8f9fa;
             padding: 20px 0;
             margin-top: auto;
+        }
+        .book-cover {
+            max-width: 100px; 
+            height: auto; 
+            object-fit: contain; 
+            border-radius: 5px;
+        }
+        .book-card {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+        .book-card:last-child {
+            border-bottom: none;
+        }
+        .book-info {
+            flex: 1;
         }
     </style>
 </head>
@@ -129,11 +155,26 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <h5 class="card-title">Fitur Cepat</h5>
-                        <div class="d-flex justify-content-around flex-wrap gap-2">
-                            <a href="#" class="btn btn-outline-primary m-1">Cari Buku</a>
-                            <a href="#" class="btn btn-outline-primary m-1">Pinjam Buku</a>
-                            <a href="#" class="btn btn-outline-primary m-1">Kembalikan Buku</a>
+                        <h5 class="card-title">Daftar Buku</h5>
+                        <div th:if="${daftarBuku == null or daftarBuku.empty}">
+                            <p class="card-text">Belum ada buku tersedia.</p>
+                        </div>
+                        <div th:unless="${daftarBuku == null or daftarBuku.empty}">
+                            <div th:each="buku : ${daftarBuku}" class="book-card">
+                                <div>
+                                    <img th:src="${buku.coverPath != null ? buku.coverPath : '/images/default-cover.jpg'}" 
+                                         class="book-cover" 
+                                         alt="Cover Buku" 
+                                         th:attr="onerror='this.src=\'/images/default-cover.jpg\''">
+                                </div>
+                                <div class="book-info">
+                                    <h6 th:text="${buku.judul}" class="mb-1"></h6>
+                                    <p class="mb-0"><strong>Penulis:</strong> <span th:text="${buku.penulis}"></span></p>
+                                    <p class="mb-0"><strong>Penerbit:</strong> <span th:text="${buku.penerbit}"></span></p>
+                                    <p class="mb-2"><strong>Stok:</strong> <span th:text="${buku.stok}"></span></p>
+                                    <a th:href="@{/member/buku/{id}(id=${buku.bukuId})}" class="btn btn-primary btn-sm">Baca Selengkapnya</a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
