@@ -4,10 +4,12 @@ import com.web.website_perpustakaan.model.Buku;
 import com.web.website_perpustakaan.model.LevelUser;
 import com.web.website_perpustakaan.model.Profile;
 import com.web.website_perpustakaan.model.User;
+import com.web.website_perpustakaan.model.Peminjaman;
 import com.web.website_perpustakaan.repository.LevelUserRepository;
 import com.web.website_perpustakaan.repository.UserRepository;
 import com.web.website_perpustakaan.service.BukuService;
 import com.web.website_perpustakaan.service.UserService;
+import com.web.website_perpustakaan.service.PeminjamanService;
 
 import jakarta.validation.Valid;
 
@@ -38,6 +40,9 @@ public class AdminController {
 
     @Autowired
     private LevelUserRepository levelUserRepository;
+
+    @Autowired
+    private PeminjamanService peminjamanService;
 
     AdminController(BukuService bukuService) {
         this.bukuService = bukuService;
@@ -188,5 +193,23 @@ public class AdminController {
             model.addAttribute("buku", buku);
             return "admin/tambah-buku";
         }
+    }
+
+    @GetMapping("/peminjaman")
+    public String getPeminjaman(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+        String username = auth.getName();
+        User admin = userService.findByUsername(username);
+        if (admin == null || admin.getLevelUser() == null || 
+            !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
+            return "redirect:/login";
+        }
+        List<Peminjaman> peminjamanList = peminjamanService.getAllPeminjaman();
+        model.addAttribute("admin", admin);
+        model.addAttribute("peminjamanList", peminjamanList);
+        return "admin/peminjaman";
     }
 }

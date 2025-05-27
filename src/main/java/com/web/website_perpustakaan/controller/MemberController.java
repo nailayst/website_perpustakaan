@@ -3,8 +3,10 @@ package com.web.website_perpustakaan.controller;
 import com.web.website_perpustakaan.model.Profile;
 import com.web.website_perpustakaan.model.User;
 import com.web.website_perpustakaan.model.Buku;
+import com.web.website_perpustakaan.model.Peminjaman;
 import com.web.website_perpustakaan.service.UserService;
 import com.web.website_perpustakaan.service.BukuService;
+import com.web.website_perpustakaan.service.PeminjamanService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -27,6 +29,9 @@ public class MemberController {
     @Autowired
     private BukuService bukuService;
 
+    @Autowired
+    private PeminjamanService peminjamanService;
+
     // ========================= DASHBOARD =========================
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -40,11 +45,14 @@ public class MemberController {
 
         if (user == null) return "redirect:/login";
 
-        // Ambil daftar buku dari BukuService
         List<Buku> daftarBuku = bukuService.getSemuaBuku();
+        List<Peminjaman> peminjamanAktif = peminjamanService.getPeminjamanAktif(user.getUserId());
+        List<Peminjaman> riwayatPeminjaman = peminjamanService.getRiwayatPeminjaman(user.getUserId());
 
         model.addAttribute("member", user);
         model.addAttribute("daftarBuku", daftarBuku);
+        model.addAttribute("peminjamanAktif", peminjamanAktif);
+        model.addAttribute("riwayatPeminjaman", riwayatPeminjaman);
         return "member/dashboard";
     }
 
@@ -61,19 +69,73 @@ public class MemberController {
 
         if (user == null) return "redirect:/login";
 
-        // Ambil buku berdasarkan ID
-        Buku buku = bukuService.getSemuaBuku().stream()
-                .filter(b -> b.getBukuId().equals(id))
-                .findFirst()
-                .orElse(null);
-
-        if (buku == null) {
+        Buku buku;
+        try {
+            buku = bukuService.getBukuById(id);
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", "Buku dengan ID " + id + " tidak ditemukan.");
             return "redirect:/member/dashboard";
+        }
+
+        List<Peminjaman> peminjamanAktif = peminjamanService.getPeminjamanAktif(user.getUserId());
+        boolean bisaPinjam = true;
+        if (peminjamanAktif != null) {
+            for (Peminjaman p : peminjamanAktif) {
+                if (p.getBuku() != null && p.getBuku().getBukuId().equals(buku.getBukuId())) {
+                    bisaPinjam = false;
+                    break;
+                }
+            }
         }
 
         model.addAttribute("member", user);
         model.addAttribute("buku", buku);
+        model.addAttribute("bisaPinjam", bisaPinjam);
         return "member/detail-buku";
+    }
+
+    // ========================= PINJAM BUKU =========================
+    @PostMapping("/buku/{id}/pinjam")
+    public String pinjamBuku(@PathVariable("id") Long bukuId, Model model, RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+        if (user == null) return "redirect:/login";
+
+        try {
+            peminjamanService.pinjamBuku(user.getUserId(), bukuId);
+            redirectAttributes.addFlashAttribute("success", "Buku berhasil dipinjam.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/member/buku/" + bukuId;
+    }
+
+    // ========================= RIWAYAT PEMINJAMAN =========================
+    @GetMapping("/peminjaman")
+    public String riwayatPeminjaman(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+
+        if (user == null) return "redirect:/login";
+
+        List<Peminjaman> peminjamanAktif = peminjamanService.getPeminjamanAktif(user.getUserId());
+        List<Peminjaman> riwayatPeminjaman = peminjamanService.getRiwayatPeminjaman(user.getUserId());
+
+        model.addAttribute("member", user);
+        model.addAttribute("peminjamanAktif", peminjamanAktif);
+        model.addAttribute("riwayatPeminjaman", riwayatPeminjaman);
+        return "member/peminjaman";
     }
 
     // ========================= TAMPIL PROFIL =========================
@@ -87,9 +149,7 @@ public class MemberController {
         String username = auth.getName();
         User user = userService.findByUsername(username);
 
-        if (user == null) {
-            return "redirect:/login";
-        }
+        if (user == null) return "redirect:/login";
 
         Profile profile = user.getProfile();
         if (profile == null) {
