@@ -4,9 +4,11 @@ import com.web.website_perpustakaan.model.Profile;
 import com.web.website_perpustakaan.model.User;
 import com.web.website_perpustakaan.model.Buku;
 import com.web.website_perpustakaan.model.Peminjaman;
+import com.web.website_perpustakaan.model.Denda;
 import com.web.website_perpustakaan.service.UserService;
 import com.web.website_perpustakaan.service.BukuService;
 import com.web.website_perpustakaan.service.PeminjamanService;
+import com.web.website_perpustakaan.service.DendaService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Controller
@@ -32,7 +36,9 @@ public class MemberController {
     @Autowired
     private PeminjamanService peminjamanService;
 
-    // ========================= DASHBOARD =========================
+    @Autowired
+    private DendaService dendaService;
+
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -56,7 +62,6 @@ public class MemberController {
         return "member/dashboard";
     }
 
-    // ========================= DETAIL BUKU =========================
     @GetMapping("/buku/{id}")
     public String detailBuku(@PathVariable("id") Long id, Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -94,7 +99,6 @@ public class MemberController {
         return "member/detail-buku";
     }
 
-    // ========================= PINJAM BUKU =========================
     @PostMapping("/buku/{id}/pinjam")
     public String pinjamBuku(@PathVariable("id") Long bukuId, Model model, RedirectAttributes redirectAttributes) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -116,7 +120,6 @@ public class MemberController {
         return "redirect:/member/buku/" + bukuId;
     }
 
-    // ========================= RIWAYAT PEMINJAMAN =========================
     @GetMapping("/peminjaman")
     public String riwayatPeminjaman(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -132,13 +135,16 @@ public class MemberController {
         List<Peminjaman> peminjamanAktif = peminjamanService.getPeminjamanAktif(user.getUserId());
         List<Peminjaman> riwayatPeminjaman = peminjamanService.getRiwayatPeminjaman(user.getUserId());
 
+        peminjamanAktif.forEach(p -> p.setDenda(dendaService.getDendaByPeminjamanId(p.getPeminjamanId())));
+        riwayatPeminjaman.forEach(p -> p.setDenda(dendaService.getDendaByPeminjamanId(p.getPeminjamanId())));
+
         model.addAttribute("member", user);
         model.addAttribute("peminjamanAktif", peminjamanAktif);
         model.addAttribute("riwayatPeminjaman", riwayatPeminjaman);
+        model.addAttribute("dendaService", dendaService); // Tambahkan dendaService ke model
         return "member/peminjaman";
     }
 
-    // ========================= TAMPIL PROFIL =========================
     @GetMapping("/profile")
     public String viewProfile(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -164,7 +170,6 @@ public class MemberController {
         return "member/profile";
     }
 
-    // ========================= UPDATE PROFIL =========================
     @PostMapping("/profile")
     public String updateProfile(@ModelAttribute("profile") Profile profile, Model model, RedirectAttributes redirectAttributes) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -197,7 +202,6 @@ public class MemberController {
         return "redirect:/member/profile";
     }
 
-    // ========================= GANTI PASSWORD =========================
     @PostMapping("/change-password")
     public String changePassword(@RequestParam("oldPassword") String oldPassword,
                                  @RequestParam("newPassword") String newPassword,
@@ -218,5 +222,81 @@ public class MemberController {
         }
 
         return "redirect:/member/profile";
+    }
+
+    @PostMapping("/peminjaman/{id}/kembalikan")
+    public String kembalikanBuku(@PathVariable("id") Long peminjamanId, RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+        if (user == null) return "redirect:/login";
+
+        try {
+            peminjamanService.kembalikanBuku(peminjamanId);
+            redirectAttributes.addFlashAttribute("success", "Buku berhasil dikembalikan.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/member/peminjaman";
+    }
+
+    @GetMapping("/denda/{id}")
+    public String tampilkanDenda(@PathVariable("id") Long dendaId, Model model, RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+        if (user == null) return "redirect:/login";
+
+        Denda denda = dendaService.getDendaById(dendaId);
+        if (denda == null) {
+            redirectAttributes.addFlashAttribute("error", "Denda tidak ditemukan.");
+            return "redirect:/member/peminjaman";
+        }
+
+        Peminjaman peminjaman = peminjamanService.getAllPeminjaman().stream()
+                .filter(p -> p.getPeminjamanId().equals(denda.getPeminjamanId()))
+                .findFirst().orElse(null);
+        if (peminjaman == null) {
+            redirectAttributes.addFlashAttribute("error", "Peminjaman terkait tidak ditemukan.");
+            return "redirect:/member/peminjaman";
+        }
+
+        // Hitung keterlambatan
+        long hariTerlambat = ChronoUnit.DAYS.between(peminjaman.getTanggalPengembalian(), 
+            peminjaman.getTanggalDikembalikan() != null ? peminjaman.getTanggalDikembalikan() : LocalDate.now());
+
+        model.addAttribute("denda", denda);
+        model.addAttribute("peminjaman", peminjaman);
+        model.addAttribute("hariTerlambat", hariTerlambat);
+        model.addAttribute("member", user);
+        return "member/denda";
+    }
+
+    @PostMapping("/denda/{id}/bayar")
+    public String bayarDenda(@PathVariable("id") Long dendaId, RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+        if (user == null) return "redirect:/login";
+
+        try {
+            dendaService.bayarDenda(dendaId);
+            redirectAttributes.addFlashAttribute("success", "Denda berhasil dibayar.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/member/peminjaman";
     }
 }

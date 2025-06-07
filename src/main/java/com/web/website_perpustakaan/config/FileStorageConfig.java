@@ -1,34 +1,59 @@
 package com.web.website_perpustakaan.config;
 
+import jakarta.annotation.PostConstruct; 
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull; 
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @Configuration
 public class FileStorageConfig implements WebMvcConfigurer {
 
-    private static final String COVER_DIR = "upload/images/"; // Path relatif dari static
-    private static final String PDF_DIR = "upload/pdfs/";
+    @Value("${file.cover-dir}")
+    private String coverDirPath;
+
+    @Value("${file.pdf-dir}")
+    private String pdfDirPath;
+
+    private String absoluteCoverPath;
+    private String absolutePdfPath;
+
+    @PostConstruct
+    public void init() {
+        try {
+            Path coverPath = Paths.get(coverDirPath).toAbsolutePath().normalize();
+            Path pdfsPath = Paths.get(pdfDirPath).toAbsolutePath().normalize();
+
+            Files.createDirectories(coverPath);
+            Files.createDirectories(pdfsPath);
+
+            this.absoluteCoverPath = "file:" + coverPath.toString() + "/";
+            this.absolutePdfPath = "file:" + pdfsPath.toString() + "/";
+
+            System.out.println("Cover upload directory: " + absoluteCoverPath);
+            System.out.println("PDF upload directory: " + absolutePdfPath);
+
+        } catch (IOException e) {
+            System.err.println("Failed to create upload directories: " + e.getMessage());
+            throw new RuntimeException("Could not create upload directories", e);
+        }
+    }
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String rootPath = System.getProperty("user.dir") + "/src/main/resources/static/";
-        File imagesDir = new File(rootPath + COVER_DIR);
-        if (!imagesDir.exists()) {
-            imagesDir.mkdirs();
-        }
-        File pdfsDir = new File(rootPath + PDF_DIR);
-        if (!pdfsDir.exists()) {
-            pdfsDir.mkdirs();
-        }
-
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) { 
         registry.addResourceHandler("/upload/images/**")
-                .addResourceLocations("file:" + rootPath + COVER_DIR)
-                .setCachePeriod(0);
+                .addResourceLocations(absoluteCoverPath) 
+                .setCachePeriod(0); 
+
         registry.addResourceHandler("/upload/pdfs/**")
-                .addResourceLocations("file:" + rootPath + PDF_DIR)
+                .addResourceLocations(absolutePdfPath)
                 .setCachePeriod(0);
     }
 }

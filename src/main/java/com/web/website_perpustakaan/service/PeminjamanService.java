@@ -3,15 +3,20 @@ package com.web.website_perpustakaan.service;
 import com.web.website_perpustakaan.model.Peminjaman;
 import com.web.website_perpustakaan.model.User;
 import com.web.website_perpustakaan.model.Buku;
+import com.web.website_perpustakaan.model.Denda;
 import com.web.website_perpustakaan.repository.PeminjamanRepository;
 import com.web.website_perpustakaan.repository.BukuRepository;
 import com.web.website_perpustakaan.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PeminjamanService {
@@ -25,6 +30,9 @@ public class PeminjamanService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private DendaService dendaService;
+
     @Transactional
     public Peminjaman pinjamBuku(Long userId, Long bukuId) {
         User user = userRepository.findById(userId)
@@ -36,12 +44,9 @@ public class PeminjamanService {
             throw new IllegalArgumentException("Stok buku habis");
         }
 
-        // Cek apakah user sudah meminjam buku ini
-        boolean sudahDipinjam = peminjamanRepository.findByUserUserIdAndStatusPeminjaman(userId, Peminjaman.StatusPeminjaman.DIPINJAM)
-                .stream()
-                .anyMatch(p -> p.getBuku().getBukuId().equals(bukuId));
-        if (sudahDipinjam) {
-            throw new IllegalArgumentException("Buku sudah dipinjam oleh user ini");
+        if (peminjamanRepository.findByUserUserIdAndStatusPeminjaman(userId, Peminjaman.StatusPeminjaman.DIPINJAM)
+                .stream().anyMatch(p -> p.getBuku().getBukuId().equals(bukuId))) {
+            throw new IllegalArgumentException("Buku sudah dipinjam");
         }
 
         Peminjaman peminjaman = new Peminjaman();
@@ -51,7 +56,6 @@ public class PeminjamanService {
         peminjaman.setTanggalPengembalian(LocalDate.now().plusDays(7));
         peminjaman.setStatusPeminjaman(Peminjaman.StatusPeminjaman.DIPINJAM);
 
-        // Kurangi stok buku
         buku.setStok(buku.getStok() - 1);
         bukuRepository.save(buku);
 
@@ -63,16 +67,24 @@ public class PeminjamanService {
         Peminjaman peminjaman = peminjamanRepository.findById(peminjamanId)
                 .orElseThrow(() -> new IllegalArgumentException("Peminjaman tidak ditemukan"));
 
-        if (peminjaman.getStatusPeminjaman() != Peminjaman.StatusPeminjaman.DIPINJAM) {
-            throw new IllegalArgumentException("Buku sudah dikembalikan atau status tidak valid");
+        if (peminjaman.getStatusPeminjaman() != Peminjaman.StatusPeminjaman.DIPINJAM &&
+            peminjaman.getStatusPeminjaman() != Peminjaman.StatusPeminjaman.TERLAMBAT) {
+            throw new IllegalArgumentException("Buku sudah dikembalikan");
         }
 
-        peminjaman.setTanggalDikembalikan(LocalDate.now());
-        peminjaman.setStatusPeminjaman(LocalDate.now().isAfter(peminjaman.getTanggalPengembalian())
-                ? Peminjaman.StatusPeminjaman.TERLAMBAT
-                : Peminjaman.StatusPeminjaman.DIKEMBALIKAN);
+        LocalDate returnDate = LocalDate.now();
+        peminjaman.setTanggalDikembalikan(returnDate);
 
-        // Tambah stok buku
+        if (returnDate.isAfter(peminjaman.getTanggalPengembalian())) {
+            peminjaman.setStatusPeminjaman(Peminjaman.StatusPeminjaman.TERLAMBAT);
+            Denda denda = dendaService.hitungDenda(peminjaman);
+            if (denda != null) {
+                peminjaman.setDenda(denda);
+            }
+        } else {
+            peminjaman.setStatusPeminjaman(Peminjaman.StatusPeminjaman.DIKEMBALIKAN);
+        }
+
         Buku buku = peminjaman.getBuku();
         buku.setStok(buku.getStok() + 1);
         bukuRepository.save(buku);
@@ -81,11 +93,28 @@ public class PeminjamanService {
     }
 
     public List<Peminjaman> getPeminjamanAktif(Long userId) {
-        return peminjamanRepository.findByUserUserIdAndStatusPeminjaman(userId, Peminjaman.StatusPeminjaman.DIPINJAM);
+        if (userId == null) return Collections.emptyList();
+        return peminjamanRepository.findByUserUserId(userId).stream()
+                .filter(p -> p.getTanggalDikembalikan() == null)
+                .peek(p -> {
+                    if (LocalDate.now().isAfter(p.getTanggalPengembalian()) &&
+                        p.getStatusPeminjaman() != Peminjaman.StatusPeminjaman.TERLAMBAT) {
+                        p.setStatusPeminjaman(Peminjaman.StatusPeminjaman.TERLAMBAT);
+                        Denda denda = dendaService.hitungDenda(p);
+                        if (denda != null) {
+                            p.setDenda(denda);
+                        }
+                        peminjamanRepository.save(p);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
     public List<Peminjaman> getRiwayatPeminjaman(Long userId) {
-        return peminjamanRepository.findByUserUserId(userId);
+        if (userId == null) return Collections.emptyList();
+        return peminjamanRepository.findByUserUserId(userId).stream()
+                .filter(p -> p.getTanggalDikembalikan() != null)
+                .collect(Collectors.toList());
     }
 
     public List<Peminjaman> getAllPeminjaman() {

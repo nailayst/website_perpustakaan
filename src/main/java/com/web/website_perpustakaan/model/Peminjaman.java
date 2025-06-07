@@ -32,6 +32,10 @@ public class Peminjaman {
     @Column(name = "status_peminjaman", nullable = false)
     private StatusPeminjaman statusPeminjaman;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "denda_id", referencedColumnName = "dendaId")
+    private Denda denda;
+
     public enum StatusPeminjaman {
         DIPINJAM, DIKEMBALIKAN, TERLAMBAT
     }
@@ -91,5 +95,13 @@ public class Peminjaman {
 
     public void setStatusPeminjaman(StatusPeminjaman statusPeminjaman) {
         this.statusPeminjaman = statusPeminjaman;
+    }
+
+    public Denda getDenda() {
+        return denda;
+    }
+
+    public void setDenda(Denda denda) {
+        this.denda = denda;
     }
 }

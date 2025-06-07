@@ -78,6 +78,12 @@
         .table tbody tr:hover {
             background-color: #f1f1f1;
         }
+        .table td:nth-child(2) { /* Kolom Judul Buku */
+            max-width: 200px; /* Batasi lebar maksimum */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
         .btn-primary {
             background-color: #1a3c5e;
             border-color: #1a3c5e;
@@ -160,6 +166,7 @@
                                 <th>Tanggal Peminjaman</th>
                                 <th>Tanggal Pengembalian</th>
                                 <th>Status</th>
+                                <th>Denda</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -169,6 +176,12 @@
                                 <td th:text="${peminjaman.tanggalPeminjaman != null ? #temporals.format(peminjaman.tanggalPeminjaman, 'dd-MM-yyyy') : 'Tidak Tersedia'}"></td>
                                 <td th:text="${peminjaman.tanggalPengembalian != null ? #temporals.format(peminjaman.tanggalPengembalian, 'dd-MM-yyyy') : 'Tidak Tersedia'}"></td>
                                 <td th:text="${peminjaman.statusPeminjaman ?: 'Tidak Tersedia'}"></td>
+                                <td>
+                                    <span th:if="${peminjaman.denda != null}">
+                                        <span th:text="'Rp ' + ${peminjaman.denda.jumlahDenda}"></span>
+                                    </span>
+                                    <span th:unless="${peminjaman.denda != null}">Tidak ada</span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
