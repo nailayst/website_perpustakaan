@@ -1,14 +1,7 @@
 package com.web.website_perpustakaan.controller;
 
-import com.web.website_perpustakaan.model.Profile;
-import com.web.website_perpustakaan.model.User;
-import com.web.website_perpustakaan.model.Buku;
-import com.web.website_perpustakaan.model.Peminjaman;
-import com.web.website_perpustakaan.model.Denda;
-import com.web.website_perpustakaan.service.UserService;
-import com.web.website_perpustakaan.service.BukuService;
-import com.web.website_perpustakaan.service.PeminjamanService;
-import com.web.website_perpustakaan.service.DendaService;
+import com.web.website_perpustakaan.model.*;
+import com.web.website_perpustakaan.service.*; 
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -23,7 +16,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional; 
+import java.util.Optional;  
 
 @Controller
 @RequestMapping("/member")
@@ -40,6 +33,9 @@ public class MemberController {
 
     @Autowired
     private DendaService dendaService;
+
+    @Autowired 
+    private PengusulanService pengusulanService;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -337,5 +333,49 @@ public class MemberController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/member/peminjaman";
+    }
+
+        @GetMapping("/pengusulan") 
+    public String managePengusulan(Model model) { 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+        if (user == null) return "redirect:/login";
+
+        model.addAttribute("pengusulan", new Pengusulan());
+        List<Pengusulan> riwayatPengusulan = pengusulanService.getPengusulanBukuByUserId(user.getUserId());
+        model.addAttribute("riwayatPengusulan", riwayatPengusulan); 
+        model.addAttribute("StatusPengusulanEnum", Pengusulan.StatusPengusulan.class); 
+
+        model.addAttribute("member", user);
+        return "member/pengusulan"; 
+    }
+
+    @PostMapping("/pengusulan") 
+    public String submitPengusulan(@ModelAttribute("pengusulan") Pengusulan pengusulan,
+                                   RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+        if (user == null) return "redirect:/login";
+
+        try {
+            pengusulanService.usulkanBuku(user.getUserId(), pengusulan.getJudulBuku(), pengusulan.getPenulis(), 
+                                           pengusulan.getPenerbit(), pengusulan.getKategori(), pengusulan.getTahunTerbit(), 
+                                           pengusulan.getKeteranganPengusulan()); 
+            redirectAttributes.addFlashAttribute("success", "Pengusulan buku berhasil dikirim!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", "Gagal mengusulkan buku: " + e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Terjadi kesalahan sistem saat mengusulkan buku.");
+            e.printStackTrace();
+        }
+        return "redirect:/member/pengusulan"; 
     }
 }

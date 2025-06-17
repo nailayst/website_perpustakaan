@@ -42,6 +42,9 @@ public class AdminController {
     @Autowired
     private MaintenanceService maintenanceService;
 
+    @Autowired 
+    private PengusulanService pengusulanService; 
+
     AdminController(BukuService bukuService) {
         this.bukuService = bukuService;
     }
@@ -193,7 +196,7 @@ public class AdminController {
             model.addAttribute("error", true);
             model.addAttribute("message", "Gagal menambahkan buku: " + e.getMessage());
             model.addAttribute("buku", buku);
-            model.addAttribute("isEditMode", false); // Pastikan ini juga diset
+            model.addAttribute("isEditMode", false); 
             return "admin/tambah-buku";
         }
     }
@@ -216,7 +219,7 @@ public class AdminController {
         return "admin/peminjaman";
     }
 
-        @GetMapping("/maintenance")
+    @GetMapping("/maintenance")
     public String getMaintenance(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
@@ -228,17 +231,17 @@ public class AdminController {
             !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
             return "redirect:/login";
         }
-        List<Buku> daftarBuku = null;
-        List<Maintenance> maintenanceList = null;
+        
+        List<Buku> daftarBuku = java.util.Collections.emptyList(); 
+        List<Maintenance> maintenanceList = java.util.Collections.emptyList(); 
         try {
             daftarBuku = bukuService.getSemuaBuku();
             maintenanceList = maintenanceService.getAllMaintenance();
         } catch (Exception e) {
             model.addAttribute("error", "Gagal memuat data maintenance: " + e.getMessage());
-            daftarBuku = java.util.Collections.emptyList(); 
-            maintenanceList = java.util.Collections.emptyList(); 
             e.printStackTrace(); 
         }
+
         model.addAttribute("admin", admin);
         model.addAttribute("daftarBuku", daftarBuku); 
         model.addAttribute("maintenanceList", maintenanceList); 
@@ -314,6 +317,7 @@ public class AdminController {
             return "admin/tambah-maintenance"; 
         }
     }
+
     @PostMapping("/maintenance/edit-buku-from-modal")
     public String editBukuFromMaintenanceModal(
             @RequestParam("maintenanceId") Long maintenanceId,
@@ -342,9 +346,11 @@ public class AdminController {
 
         try {
             maintenanceService.getBukuForMaintenanceEdit(maintenanceId, keteranganSelesai); 
+
             YearMonth yearMonth = YearMonth.of(tahunTerbit, bulanTerbit);
             buku.setTanggalTerbit(yearMonth);
-            buku.setBukuId(bukuId);
+            buku.setBukuId(bukuId); 
+
             if (bulanTerbit < 1 || bulanTerbit > 12) {
                 redirectAttributes.addFlashAttribute("error", "Bulan terbit harus antara 1 dan 12");
                 return "redirect:/admin/maintenance"; 
@@ -357,6 +363,7 @@ public class AdminController {
                  redirectAttributes.addFlashAttribute("error", "Validasi buku gagal: " + result.getAllErrors().get(0).getDefaultMessage());
                  return "redirect:/admin/maintenance";
             }
+            
             bukuService.updateBuku(buku, gambarBuku, filePdf);
             redirectAttributes.addFlashAttribute("success", "Maintenance selesai dan buku berhasil diperbarui!");
             return "redirect:/admin/maintenance";
@@ -372,5 +379,115 @@ public class AdminController {
             e.printStackTrace(); 
             return "redirect:/admin/maintenance";
         }
+    }
+
+        @GetMapping("/pengusulan") 
+    public String listPengusulan(Model model) { 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+        String username = auth.getName();
+        User admin = userService.findByUsername(username);
+        if (admin == null || admin.getLevelUser() == null || 
+            !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
+            return "redirect:/login";
+        }
+
+        List<Pengusulan> pengusulanList = java.util.Collections.emptyList(); 
+        try {
+            pengusulanList = pengusulanService.getAllPengusulanBuku(); 
+        } catch (Exception e) {
+            model.addAttribute("error", "Gagal memuat data pengusulan buku: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
+        model.addAttribute("admin", admin);
+        model.addAttribute("pengusulanList", pengusulanList); 
+        model.addAttribute("StatusPengusulanEnum", Pengusulan.StatusPengusulan.class); 
+        return "admin/pengusulan"; 
+    }
+
+    // Endpoint untuk menampilkan detail pengusulan (BARU)
+    @GetMapping("/pengusulan/{id}/detail")
+    public String detailPengusulan(@PathVariable("id") Long idPengusulan, Model model, RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+        String username = auth.getName();
+        User admin = userService.findByUsername(username);
+        if (admin == null || admin.getLevelUser() == null || 
+            !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
+            return "redirect:/login";
+        }
+
+        try {
+            Pengusulan pengusulan = pengusulanService.getPengusulanBukuById(idPengusulan)
+                .orElseThrow(() -> new IllegalArgumentException("Pengusulan buku dengan ID " + idPengusulan + " tidak ditemukan."));
+            
+            model.addAttribute("admin", admin);
+            model.addAttribute("pengusulan", pengusulan);
+            model.addAttribute("StatusPengusulanEnum", Pengusulan.StatusPengusulan.class);
+            return "admin/detail-pengusulan"; // Akan membuat file HTML ini
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/pengusulan";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Terjadi kesalahan sistem saat memuat detail usulan: " + e.getMessage());
+            e.printStackTrace();
+            return "redirect:/admin/pengusulan";
+        }
+    }
+
+
+    @PostMapping("/pengusulan/{id}/update-status") 
+    public String updatePengusulanStatus(@PathVariable("id") Long idPengusulan, 
+                                     @RequestParam("status") Pengusulan.StatusPengusulan newStatus, 
+                                     RedirectAttributes redirectAttributes) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+        String username = auth.getName();
+        User admin = userService.findByUsername(username);
+        if (admin == null || admin.getLevelUser() == null || 
+            !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
+            return "redirect:/login";
+        }
+
+        try {
+            pengusulanService.updateStatusPengusulan(idPengusulan, newStatus);
+            redirectAttributes.addFlashAttribute("success", "Status pengusulan buku berhasil diperbarui!");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Terjadi kesalahan sistem saat memperbarui status pengusulan.");
+            e.printStackTrace();
+        }
+        return "redirect:/admin/pengusulan/" + idPengusulan + "/detail"; // Redirect ke halaman detail setelah update
+    }
+
+    @PostMapping("/pengusulan/{id}/delete") 
+    public String deletePengusulan(@PathVariable("id") Long idPengusulan, RedirectAttributes redirectAttributes) { 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+        String username = auth.getName();
+        User admin = userService.findByUsername(username);
+        if (admin == null || admin.getLevelUser() == null || 
+            !"admin".equalsIgnoreCase(admin.getLevelUser().getLevelUser())) {
+            return "redirect:/login";
+        }
+
+        try {
+            pengusulanService.deletePengusulan(idPengusulan);
+            redirectAttributes.addFlashAttribute("success", "Pengusulan buku berhasil dihapus.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Gagal menghapus pengusulan buku: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return "redirect:/admin/pengusulan"; 
     }
 }

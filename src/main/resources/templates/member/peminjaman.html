@@ -25,7 +25,6 @@
         .btn-success:hover { background-color: #218838; }
         .btn-custom-pdf { background-color: #2a5a8e; border-color: #2a5a8e; color: #fff; } 
         .btn-custom-pdf:hover { background-color: #3a6a9e; }
-        /* Style untuk tombol Lihat Denda (secondary) */
         .btn-secondary { background-color: #6c757d; border-color: #6c757d; color: #fff; } 
         .btn-secondary:hover { background-color: #5a6268; border-color: #5a6268; }
 
@@ -33,17 +32,15 @@
         table { font-size: 14px; }
         th, td { vertical-align: middle; }
         .btn-group-action { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
-        
-        /* Logout form styling */
         .logout-form-nav { display: inline; }
         .logout-button-nav { 
             background: none; 
             border: none; 
             padding: 0;
-            color: #f8f9fa; /* Warna teks */
+            color: #f8f9fa; 
             font-weight: 500;
             text-decoration: none;
-            cursor: pointer; /* Menjaga kursor agar terlihat bisa diklik */
+            cursor: pointer; 
         }
         .logout-button-nav:hover { color: #ffca2c; }
 
@@ -52,14 +49,12 @@
             border: none; 
             padding: 12px 20px; 
             text-decoration: none;
-            color: #f8f9fa; /* Warna teks */
+            color: #f8f9fa; 
             width: 100%; 
             text-align: left; 
-            cursor: pointer; /* Menjaga kursor agar terlihat bisa diklik */
+            cursor: pointer;
         }
         .logout-button-sidebar:hover { background-color: #2a5a8e; border-left: 4px solid #ffca2c; }
-
-        /* Style untuk teks "Tidak ada denda" yang seperti tombol non-aktif dan lebih jelas */
         .no-denda-text {
             background-color: #e9ecef; 
             color: #495057; 
@@ -102,6 +97,7 @@
         <div class="sidebar">
             <a th:href="@{/member/dashboard}"><i class="fas fa-home me-2"></i> Dashboard</a>
             <a th:href="@{/member/peminjaman}" class="active"><i class="fas fa-book-reader me-2"></i> Peminjaman</a>
+            <a th:href="@{/member/pengusulan}"><i class="fas fa-lightbulb me-2"></i> Pengusulan Buku</a> 
             <a th:href="@{/member/profile}"><i class="fas fa-user-circle me-2"></i> Profile</a>
             <form th:action="@{/logout}" method="post">
                 <button type="submit" class="btn btn-link logout-button-sidebar"><i class="fas fa-sign-out-alt me-2"></i> Logout</button>

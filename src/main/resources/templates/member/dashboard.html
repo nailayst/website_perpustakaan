@@ -45,14 +45,13 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             flex: 1;
-            margin: 20px; /* Konsisten dengan patokan detail-buku.html */
+            margin: 20px;
         }
         .card {
             border: 1px solid #ddd;
             border-radius: 10px;
             background-color: #ffffff;
             padding: 20px;
-            /* Menghapus efek hover transform karena tidak ada di patokan detail-buku */
         }
         .card-title {
             color: #1a3c5e;
@@ -99,7 +98,6 @@
         .book-info {
             flex: 1;
         }
-        /* Logout form styling dari detail-denda.html yang sudah bersih */
         .logout-form-nav { display: inline; }
         .logout-button-nav { background: none; border: none; padding: 0; color: #f8f9fa; font-weight: 500; text-decoration: none; }
         .logout-button-nav:hover { color: #ffca2c; }
@@ -113,7 +111,7 @@
             .card { padding: 15px; }
             .book-card { flex-direction: column; align-items: flex-start; gap: 10px; padding: 15px; }
             .book-cover { margin-bottom: 15px; }
-            .book-info { width: 100%; } /* Agar info mengambil lebar penuh di mobile */
+            .book-info { width: 100%; } 
             .book-info p strong, .book-info p span { display: block; width: auto; text-align: left; }
             .book-info p { margin-bottom: 8px; }
         }
@@ -142,6 +140,7 @@
         <div class="sidebar">
             <a th:href="@{/member/dashboard}" class="active"><i class="fas fa-home me-2"></i> Dashboard</a>
             <a th:href="@{/member/peminjaman}"><i class="fas fa-book-reader me-2"></i> Peminjaman</a>
+            <a th:href="@{/member/pengusulan}"><i class="fas fa-lightbulb me-2"></i> Pengusulan Buku</a> 
             <a th:href="@{/member/profile}"><i class="fas fa-user-circle me-2"></i> Profile</a>
             <form th:action="@{/logout}" method="post">
                 <button type="submit" class="btn btn-link logout-button-sidebar"><i class="fas fa-sign-out-alt me-2"></i> Logout</button>
