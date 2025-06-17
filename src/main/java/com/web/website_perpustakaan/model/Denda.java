@@ -15,7 +15,7 @@ public class Denda {
     private Long peminjamanId;
 
     @Column(name = "jumlah_denda", nullable = false)
-    private Long jumlahDenda;
+    private Double jumlahDenda; 
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status_pembayaran", nullable = false)
@@ -28,7 +28,6 @@ public class Denda {
         BELUM_DIBAYAR, SUDAH_DIBAYAR
     }
 
-    // Getters and Setters
     public Long getDendaId() {
         return dendaId;
     }
@@ -45,11 +44,11 @@ public class Denda {
         this.peminjamanId = peminjamanId;
     }
 
-    public Long getJumlahDenda() {
+    public Double getJumlahDenda() { 
         return jumlahDenda;
     }
 
-    public void setJumlahDenda(Long jumlahDenda) {
+    public void setJumlahDenda(Double jumlahDenda) { 
         this.jumlahDenda = jumlahDenda;
     }
 

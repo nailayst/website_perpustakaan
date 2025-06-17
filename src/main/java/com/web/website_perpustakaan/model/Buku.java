@@ -1,13 +1,7 @@
 package com.web.website_perpustakaan.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.time.YearMonth;
 
 @Entity
@@ -47,6 +41,22 @@ public class Buku {
     @Column(name = "tanggal_terbit")
     private YearMonth tanggalTerbit;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status_buku")
+    private StatusBuku statusBuku = StatusBuku.TERSEDIA;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "kondisi")
+    private KondisiBuku kondisi = KondisiBuku.BAIK;
+
+    public enum StatusBuku {
+    TERSEDIA, DALAM_PERBAIKAN, DITARIK
+    }
+
+    public enum KondisiBuku {
+    BAIK, RUSAK_RINGAN, RUSAK_BERAT
+    }
+
     public Long getBukuId() { return bukuId; }
     public void setBukuId(Long bukuId) { this.bukuId = bukuId; }
     public String getJudul() { return judul; }
@@ -67,4 +77,8 @@ public class Buku {
     public void setPdfPath(String pdfPath) { this.pdfPath = pdfPath; }
     public YearMonth getTanggalTerbit() { return tanggalTerbit; }
     public void setTanggalTerbit(YearMonth tanggalTerbit) { this.tanggalTerbit = tanggalTerbit; }
+    public StatusBuku getStatusBuku() { return statusBuku; }
+    public void setStatusBuku(StatusBuku statusBuku) { this.statusBuku = statusBuku; }
+    public KondisiBuku getKondisi() { return kondisi; }
+    public void setKondisi(KondisiBuku kondisi) { this.kondisi = kondisi; }
 }

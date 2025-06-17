@@ -78,9 +78,10 @@
         .table tbody tr:hover {
             background-color: #f1f1f1;
         }
-        .table td:nth-child(2) { /* Kolom Judul Buku */
-            max-width: 200px; /* Batasi lebar maksimum */
-            overflow: hidden;
+        /* Perbaikan untuk kolom Judul Buku */
+        .table td:nth-child(2) { 
+            max-width: 150px; /* Anda bisa menyesuaikan nilai ini */
+            overflow: hidden; /* Penting untuk menyembunyikan teks */
             text-overflow: ellipsis;
             white-space: nowrap;
         }
@@ -141,6 +142,15 @@
             </div>
             <a th:href="@{/admin/tambah-buku}">Tambah Buku</a>
             <a th:href="@{/admin/peminjaman}">Data Peminjaman</a>
+            <div class="dropdown">
+                <a class="dropdown-toggle" href="#" role="button" id="maintenanceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    Pemeliharaan
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="maintenanceDropdown">
+                    <li><a class="dropdown-item" th:href="@{/admin/maintenance}">Data Maintenance</a></li>
+                    <li><a class="dropdown-item" th:href="@{/admin/maintenance/tambah}">Buat Maintenance</a></li>
+                </ul>
+            </div>
             <form th:action="@{/logout}" method="post" style="margin: 0;">
                 <button type="submit" class="btn btn-link text-white w-100 text-start" style="background: none; border: none; padding: 12px 20px; text-decoration: none;">Logout</button>
             </form>

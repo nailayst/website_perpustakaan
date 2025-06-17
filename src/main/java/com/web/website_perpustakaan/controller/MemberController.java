@@ -21,7 +21,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional; 
 
 @Controller
 @RequestMapping("/member")
@@ -63,7 +65,7 @@ public class MemberController {
     }
 
     @GetMapping("/buku/{id}")
-    public String detailBuku(@PathVariable("id") Long id, Model model) {
+    public String detailBuku(@PathVariable("id") Long id, Model model, RedirectAttributes redirectAttributes) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
             return "redirect:/login";
@@ -74,28 +76,52 @@ public class MemberController {
 
         if (user == null) return "redirect:/login";
 
-        Buku buku;
+        Buku buku = null;
         try {
-            buku = bukuService.getBukuById(id);
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("error", "Buku dengan ID " + id + " tidak ditemukan.");
+            Optional<Buku> optionalBuku = bukuService.getBukuById(id); 
+            
+            if (optionalBuku.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "Buku dengan ID " + id + " tidak ditemukan.");
+                return "redirect:/member/dashboard";
+            }
+            buku = optionalBuku.get();
+
+            if (buku.getStatusBuku() == null) {
+                buku.setStatusBuku(Buku.StatusBuku.TERSEDIA);
+            }
+            if (buku.getKondisi() == null) {
+                buku.setKondisi(Buku.KondisiBuku.BAIK);
+            }
+            if (buku.getStok() == null) {
+                buku.setStok(0);
+            }
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Terjadi kesalahan saat mengambil detail buku: " + e.getMessage());
             return "redirect:/member/dashboard";
         }
 
         List<Peminjaman> peminjamanAktif = peminjamanService.getPeminjamanAktif(user.getUserId());
         boolean bisaPinjam = true;
+        
         if (peminjamanAktif != null) {
             for (Peminjaman p : peminjamanAktif) {
-                if (p.getBuku() != null && p.getBuku().getBukuId().equals(buku.getBukuId())) {
+                if (p.getBuku() != null && p.getBuku().getBukuId() != null && p.getBuku().getBukuId().equals(buku.getBukuId())) {
                     bisaPinjam = false;
                     break;
                 }
             }
         }
+        
+        bisaPinjam = bisaPinjam && buku.getStok() > 0 && 
+                      (buku.getStatusBuku() == Buku.StatusBuku.TERSEDIA);
 
         model.addAttribute("member", user);
         model.addAttribute("buku", buku);
         model.addAttribute("bisaPinjam", bisaPinjam);
+        model.addAttribute("StatusBukuEnum", Buku.StatusBuku.class);
+        model.addAttribute("KondisiBukuEnum", Buku.KondisiBuku.class);
+        
         return "member/detail-buku";
     }
 
@@ -135,13 +161,15 @@ public class MemberController {
         List<Peminjaman> peminjamanAktif = peminjamanService.getPeminjamanAktif(user.getUserId());
         List<Peminjaman> riwayatPeminjaman = peminjamanService.getRiwayatPeminjaman(user.getUserId());
 
-        peminjamanAktif.forEach(p -> p.setDenda(dendaService.getDendaByPeminjamanId(p.getPeminjamanId())));
-        riwayatPeminjaman.forEach(p -> p.setDenda(dendaService.getDendaByPeminjamanId(p.getPeminjamanId())));
+        peminjamanAktif = peminjamanAktif != null ? peminjamanAktif : Collections.emptyList();
+        riwayatPeminjaman = riwayatPeminjaman != null ? riwayatPeminjaman : Collections.emptyList();
 
         model.addAttribute("member", user);
         model.addAttribute("peminjamanAktif", peminjamanAktif);
         model.addAttribute("riwayatPeminjaman", riwayatPeminjaman);
-        model.addAttribute("dendaService", dendaService); // Tambahkan dendaService ke model
+        model.addAttribute("StatusPeminjamanEnum", Peminjaman.StatusPeminjaman.class);
+        model.addAttribute("StatusPembayaranEnum", Denda.StatusPembayaran.class);
+
         return "member/peminjaman";
     }
 
@@ -264,19 +292,30 @@ public class MemberController {
         Peminjaman peminjaman = peminjamanService.getAllPeminjaman().stream()
                 .filter(p -> p.getPeminjamanId().equals(denda.getPeminjamanId()))
                 .findFirst().orElse(null);
+        
         if (peminjaman == null) {
             redirectAttributes.addFlashAttribute("error", "Peminjaman terkait tidak ditemukan.");
             return "redirect:/member/peminjaman";
         }
 
-        // Hitung keterlambatan
-        long hariTerlambat = ChronoUnit.DAYS.between(peminjaman.getTanggalPengembalian(), 
-            peminjaman.getTanggalDikembalikan() != null ? peminjaman.getTanggalDikembalikan() : LocalDate.now());
+        long hariTerlambat = 0;
+        if (peminjaman.getTanggalPengembalian() != null) {
+            LocalDate tanggalAkhirHitung = peminjaman.getTanggalDikembalikan() != null ? 
+                                         peminjaman.getTanggalDikembalikan() : LocalDate.now();
+            hariTerlambat = ChronoUnit.DAYS.between(peminjaman.getTanggalPengembalian(), tanggalAkhirHitung);
+            if (hariTerlambat < 0) { 
+                hariTerlambat = 0;
+            }
+        }
 
         model.addAttribute("denda", denda);
         model.addAttribute("peminjaman", peminjaman);
         model.addAttribute("hariTerlambat", hariTerlambat);
         model.addAttribute("member", user);
+        
+        model.addAttribute("StatusPeminjamanEnum", Peminjaman.StatusPeminjaman.class);
+        model.addAttribute("StatusPembayaranEnum", Denda.StatusPembayaran.class);
+
         return "member/denda";
     }
 

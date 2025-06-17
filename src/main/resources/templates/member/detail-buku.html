@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Buku - KlikPustaka</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -15,7 +16,6 @@
             flex-direction: column;
         }
         .navbar {
-            z-index: 1000;
             background-color: #1a3c5e;
         }
         .navbar-brand, .navbar-nav .nav-link {
@@ -25,17 +25,14 @@
             color: #ffca2c;
         }
         .sidebar {
-            min-height: 100vh;
             background-color: #1a3c5e;
             padding-top: 20px;
-            transition: all 0.3s;
         }
         .sidebar a {
             color: #f8f9fa;
             padding: 12px 20px;
             display: block;
             text-decoration: none;
-            transition: background-color 0.3s;
         }
         .sidebar a:hover, .sidebar a.active {
             background-color: #2a5a8e;
@@ -97,18 +94,82 @@
             border-radius: 5px;
         }
         .book-details {
-            padding-left: 10px; 
+            padding-left: 20px; 
             display: flex;
             flex-direction: column;
             justify-content: center;
-        }
-        .row {
-            margin: 0; 
         }
         .button-group {
             display: flex;
             gap: 10px;
             align-items: center;
+            margin-top: 15px; 
+        }
+        .status-box { 
+            background-color: #e9ecef; 
+            border: 1px solid #ced4da; 
+            border-radius: 5px; 
+            padding: 10px; 
+            color: #495057; 
+            font-weight: 500; 
+            margin-top: 10px; 
+            text-align: center; 
+            display: block; 
+            width: 100%; 
+        }
+        .status-box.available { 
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #28a745;
+        }
+        .status-box.maintenance { 
+            background-color: #ffe0b2; 
+            border-color: #ffcc80;
+            color: #e65100; 
+        }
+        .status-box.withdrawn { 
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #dc3545;
+        }
+        .book-info p {
+            margin-bottom: 5px; 
+            display: grid; 
+            grid-template-columns: 180px 1fr; 
+            gap: 0 15px; 
+            align-items: baseline; 
+        }
+        .book-info p strong {
+            display: block; 
+            text-align: left; 
+            white-space: nowrap; 
+        }
+        .book-info p span {
+            display: block; 
+            text-align: left; 
+            word-break: break-word; 
+        }
+
+        .logout-form { display: inline; }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; min-height: auto; padding-top: 10px; }
+            .d-flex { flex-direction: column; }
+            .main-content { margin: 10px; padding: 20px; }
+            .card { padding: 15px; }
+            .book-cover { margin-bottom: 15px; }
+            .book-details { padding-left: 0; }
+            .book-info p { 
+                display: block; 
+                margin-bottom: 8px;
+            }
+            .book-info p strong, .book-info p span {
+                display: block; 
+                width: auto; 
+                text-align: left;
+            }
+            .button-group { flex-direction: column; gap: 10px; align-items: stretch; }
+            .status-box { width: 100%; } 
         }
     </style>
 </head>
@@ -133,21 +194,18 @@
 
     <div class="d-flex">
         <div class="sidebar">
-            <a th:href="@{/member/dashboard}" class="active">Dashboard</a>
-            <a th:href="@{/member/peminjaman}">Peminjaman</a>
-            <a th:href="@{/member/profile}">Profile</a>
+            <a th:href="@{/member/dashboard}" class="active"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a th:href="@{/member/peminjaman}"><i class="fas fa-book-reader me-2"></i> Peminjaman</a>
+            <a th:href="@{/member/profile}"><i class="fas fa-user-circle me-2"></i> Profile</a>
             <form th:action="@{/logout}" method="post" style="margin: 0;">
-                <button type="submit" class="btn btn-link text-white w-100 text-start" style="background: none; border: none; padding: 12px 20px; text-decoration: none;">Logout</button>
+                <button type="submit" class="btn btn-link text-white w-100 text-start" style="background: none; border: none; padding: 12px 20px; text-decoration: none;"><i class="fas fa-sign-out-alt me-2"></i> Logout</button>
             </form>
         </div>
         <div class="main-content">
             <h2 class="mb-4" style="color: #1a3c5e;">Detail Buku</h2>
-            <div th:if="${#vars['success'] != null}" class="alert alert-success" role="alert">
-                <span th:text="${success}"></span>
-            </div>
-            <div th:if="${#vars['error'] != null}" class="alert alert-danger" role="alert">
-                <span th:text="${error}"></span>
-            </div>
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
             <div th:if="${buku != null}">
                 <div class="card">
                     <div class="row align-items-center">
@@ -155,28 +213,43 @@
                             <img th:src="${buku.coverPath != null ? buku.coverPath : '/images/default-cover.jpg'}" 
                                  class="book-cover" 
                                  alt="Cover Buku" 
-                                 th:attr="onerror='this.src=\'/images/default-cover.jpg\''">
+                                 onerror="this.src='/images/default-cover.jpg'">
                         </div>
                         <div class="col-md-9 book-details">
                             <h4 th:text="${buku.judul} ?: 'Judul Tidak Tersedia'" class="card-title mb-3"></h4>
-                            <p class="mb-1"><strong>Penulis:</strong> <span th:text="${buku.penulis} ?: 'Tidak Tersedia'"></span></p>
-                            <p class="mb-1"><strong>Penerbit:</strong> <span th:text="${buku.penerbit} ?: 'Tidak Tersedia'"></span></p>
-                            <p class="mb-1"><strong>ISBN:</strong> <span th:text="${buku.isbn} ?: 'Tidak Tersedia'"></span></p>
-                            <p class="mb-1"><strong>Kategori:</strong> <span th:text="${buku.kategori} ?: 'Tidak Tersedia'"></span></p>
-                            <p class="mb-1"><strong>Tanggal Terbit:</strong> <span th:text="${buku.tanggalTerbit != null ? #temporals.format(buku.tanggalTerbit, 'MM-yyyy') : 'Tidak Tersedia'}"></span></p>
-                            <p class="mb-3"><strong>Stok:</strong> <span th:text="${buku.stok} ?: '0'"></span></p>
+                            <div class="book-info">
+                                <p><strong>Penulis:</strong> <span>[[${buku.penulis} ?: 'Tidak Tersedia']]</span></p>
+                                <p><strong>Penerbit:</strong> <span>[[${buku.penerbit} ?: 'Tidak Tersedia']]</span></p>
+                                <p><strong>ISBN:</strong> <span>[[${buku.isbn} ?: 'Tidak Tersedia']]</span></p>
+                                <p><strong>Kategori:</strong> <span>[[${buku.kategori} ?: 'Tidak Tersedia']]</span></p>
+                                <p><strong>Tanggal Terbit:</strong> <span>[[${buku.tanggalTerbit != null ? #temporals.format(buku.tanggalTerbit, 'dd MMMM yyyy', new java.util.Locale('id', 'ID')) : 'Tidak Tersedia'}]]</span></p>
+                                <p><strong>Stok:</strong> <span>[[${buku.stok} ?: '0']]</span></p>
+                            </div>
+                            
+                            <div th:switch="${buku.statusBuku}">
+                                <div th:case="${StatusBukuEnum.TERSEDIA}" class="status-box available">Status: Tersedia</div>
+                                <div th:case="${StatusBukuEnum.DALAM_PERBAIKAN}" class="status-box maintenance">Buku dalam Proses Pemeliharaan</div>
+                                <div th:case="${StatusBukuEnum.DITARIK}" class="status-box withdrawn">Hanya Bisa Dipinjam Secara Langsung</div> 
+                                <div th:case="*" class="status-box">Status: Tidak Diketahui</div>
+                            </div>
+
                             <div class="button-group">
-                                <div th:if="${buku.stok > 0}">
-                                    <form th:if="${bisaPinjam}" 
-                                          th:action="@{/member/buku/{id}/pinjam(id=${buku.bukuId})}" method="post" style="display:inline;">
+                                <div th:if="${bisaPinjam}">
+                                    <form th:action="@{/member/buku/{id}/pinjam(id=${buku.bukuId})}" method="post" style="display:inline;">
                                         <button type="submit" class="btn btn-primary">Pinjam</button>
                                     </form>
-                                    <button th:unless="${bisaPinjam}" class="btn btn-secondary" disabled>Sudah Dipinjam</button>
                                 </div>
-                                <button th:unless="${buku.stok > 0}" class="btn btn-secondary" disabled>Stok Habis</button>
+                                
+                                <th:block th:unless="${bisaPinjam}">
+                                    <button th:if="${buku.statusBuku == StatusBukuEnum.DITARIK}" class="btn btn-secondary" disabled>Ditarik</button>
+                                    <button th:if="${buku.stok == 0 and buku.statusBuku != StatusBukuEnum.DITARIK}" class="btn btn-secondary" disabled>Stok Habis</button>
+                                    <button th:if="${buku.stok > 0 and buku.statusBuku != StatusBukuEnum.TERSEDIA and buku.statusBuku != StatusBukuEnum.DITARIK}" class="btn btn-secondary" disabled>Tidak Tersedia</button>
+                                    <button th:if="${bisaPinjam == false and buku.stok > 0 and buku.statusBuku == StatusBukuEnum.TERSEDIA}" class="btn btn-secondary" disabled>Sudah Dipinjam</button>
+                                </th:block>
+
                                 <a th:href="@{/member/dashboard}" class="btn btn-outline-primary">Kembali</a>
                             </div>
-                        </div>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -186,7 +259,7 @@
         </div>
     </div>
 
-    <footer class="mt-4">
+    <footer>
         <div class="container text-center">
             <p>© 2025 KlikPustaka. All rights reserved.</p>
         </div>

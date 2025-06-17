@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "file.cover-dir",
+      "type": "java.lang.String",
+      "description": "Directory for storing uploaded cover images."
+    },
+    {
+      "name": "file.pdf-dir",
+      "type": "java.lang.String",
+      "description": "Directory for storing uploaded PDF files."
+    }
+  ]
+}

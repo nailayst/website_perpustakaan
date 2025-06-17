@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional; 
 
 @Service
 public class DendaService {
@@ -17,34 +18,53 @@ public class DendaService {
     @Autowired
     private DendaRepository dendaRepository;
 
-    private static final long DENDA_PER_HARI = 1000;
+    private static final double DENDA_PER_HARI = 1000.0; 
 
     @Transactional
     public Denda hitungDenda(Peminjaman peminjaman) {
-        if (peminjaman == null || peminjaman.getStatusPeminjaman() != Peminjaman.StatusPeminjaman.TERLAMBAT) {
+        if (peminjaman == null || peminjaman.getStatusPeminjaman() == null) {
             return null;
         }
 
-        LocalDate tanggalPerbandingan = peminjaman.getTanggalDikembalikan() != null 
-                ? peminjaman.getTanggalDikembalikan() 
-                : LocalDate.now();
-        long hariTerlambat = ChronoUnit.DAYS.between(peminjaman.getTanggalPengembalian(), tanggalPerbandingan);
-        if (hariTerlambat <= 0) return null;
+        if (peminjaman.getStatusPeminjaman() != Peminjaman.StatusPeminjaman.TERLAMBAT) {
+            return null;
+        }
 
-        Denda denda = peminjaman.getDenda();
+        LocalDate tanggalPerbandingan = peminjaman.getTanggalDikembalikan() != null
+                ? peminjaman.getTanggalDikembalikan()
+                : LocalDate.now();
+
+        if (peminjaman.getTanggalPengembalian() == null) {
+            return null; 
+        }
+
+        long hariTerlambat = ChronoUnit.DAYS.between(peminjaman.getTanggalPengembalian(), tanggalPerbandingan);
+
+        if (hariTerlambat <= 0) {
+            return null;
+        }
+
+        Denda denda = peminjaman.getDenda(); 
         if (denda == null) {
             denda = new Denda();
             denda.setPeminjamanId(peminjaman.getPeminjamanId());
-            denda.setStatusPembayaran(Denda.StatusPembayaran.BELUM_DIBAYAR);
+            denda.setStatusPembayaran(Denda.StatusPembayaran.BELUM_DIBAYAR); 
+            denda.setTanggalPembayaran(null); 
+        } else {
+            if (denda.getStatusPembayaran() == Denda.StatusPembayaran.SUDAH_DIBAYAR) {
+                 return denda; 
+            }
         }
-        denda.setJumlahDenda(hariTerlambat * DENDA_PER_HARI);
+
+        denda.setJumlahDenda((double) hariTerlambat * DENDA_PER_HARI);
         return dendaRepository.save(denda);
     }
 
     @Transactional
     public Denda bayarDenda(Long dendaId) {
-        Denda denda = dendaRepository.findById(dendaId)
-                .orElseThrow(() -> new IllegalArgumentException("Denda tidak ditemukan"));
+        Optional<Denda> optionalDenda = dendaRepository.findById(dendaId);
+        Denda denda = optionalDenda.orElseThrow(() -> new IllegalArgumentException("Denda tidak ditemukan"));
+
         if (denda.getStatusPembayaran() == Denda.StatusPembayaran.SUDAH_DIBAYAR) {
             throw new IllegalArgumentException("Denda sudah dibayar");
         }
