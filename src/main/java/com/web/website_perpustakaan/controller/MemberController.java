@@ -37,8 +37,8 @@ public class MemberController {
     @Autowired 
     private PengusulanService pengusulanService;
 
-    @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+        @GetMapping("/dashboard")
+    public String dashboard(Model model) { 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
             return "redirect:/login";
@@ -49,14 +49,19 @@ public class MemberController {
 
         if (user == null) return "redirect:/login";
 
-        List<Buku> daftarBuku = bukuService.getSemuaBuku();
         List<Peminjaman> peminjamanAktif = peminjamanService.getPeminjamanAktif(user.getUserId());
         List<Peminjaman> riwayatPeminjaman = peminjamanService.getRiwayatPeminjaman(user.getUserId());
+        List<Buku> rekomendasiBuku = bukuService.getRekomendasiBuku();
+        List<Denda> dendaBelumDibayar = peminjamanService.getDendaBelumDibayarByUserId(user.getUserId());
+        List<Peminjaman> bukuAkanJatuhTempo = peminjamanService.getBukuAkanJatuhTempoAtauTerlambat(user.getUserId(), 7); 
 
         model.addAttribute("member", user);
-        model.addAttribute("daftarBuku", daftarBuku);
         model.addAttribute("peminjamanAktif", peminjamanAktif);
         model.addAttribute("riwayatPeminjaman", riwayatPeminjaman);
+        model.addAttribute("rekomendasiBuku", rekomendasiBuku); 
+        model.addAttribute("dendaBelumDibayar", dendaBelumDibayar); 
+        model.addAttribute("bukuAkanJatuhTempo", bukuAkanJatuhTempo); 
+        
         return "member/dashboard";
     }
 
@@ -377,5 +382,24 @@ public class MemberController {
             e.printStackTrace();
         }
         return "redirect:/member/pengusulan"; 
+    }
+    @GetMapping("/koleksi-buku")
+    public String koleksiBuku(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || auth.getPrincipal().equals("anonymousUser")) {
+            return "redirect:/login";
+        }
+        String username = auth.getName();
+        User user = userService.findByUsername(username);
+        if (user == null) return "redirect:/login";
+
+        List<Buku> daftarBuku = bukuService.searchBuku(keyword);
+
+        model.addAttribute("member", user);
+        model.addAttribute("daftarBuku", daftarBuku);
+        model.addAttribute("keyword", keyword); 
+        model.addAttribute("StatusBukuEnum", Buku.StatusBuku.class); 
+        model.addAttribute("KondisiBukuEnum", Buku.KondisiBuku.class); 
+        return "member/koleksi-buku"; 
     }
 }

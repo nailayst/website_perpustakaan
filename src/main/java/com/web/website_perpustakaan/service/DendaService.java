@@ -44,7 +44,7 @@ public class DendaService {
             return null;
         }
 
-        Denda denda = peminjaman.getDenda(); 
+        Denda denda = dendaRepository.findByPeminjamanId(peminjaman.getPeminjamanId()); // Pastikan ini mengambil denda yang sudah ada
         if (denda == null) {
             denda = new Denda();
             denda.setPeminjamanId(peminjaman.getPeminjamanId());
@@ -83,5 +83,9 @@ public class DendaService {
 
     public List<Denda> getAllDenda() {
         return dendaRepository.findAll();
+    }
+
+    public List<Denda> getDendaBelumDibayarByUserId(Long userId) {
+        return dendaRepository.findDendaByUserIdAndStatus(userId, Denda.StatusPembayaran.BELUM_DIBAYAR);
     }
 }

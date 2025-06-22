@@ -24,10 +24,10 @@
         .btn-outline-primary:hover { background-color: #1a3c5e; color: #f8f9fa; }
         footer { background-color: #1a3c5e; color: #f8f9fa; padding: 20px 0; margin-top: auto; }
         .text-danger { font-size: 0.9em; }
-        .table th, .table td { vertical-align: middle; } /* Untuk tabel riwayat */
-        .status-badge-menunggu { background-color: #ffc107; color: #343a40; } /* yellow */
-        .status-badge-diterima { background-color: #28a745; color: white; } /* green */
-        .status-badge-ditolak { background-color: #dc3545; color: white; } /* red */
+        .table th, .table td { vertical-align: middle; } 
+        .status-badge-menunggu { background-color: #ffc107; color: #343a40; } 
+        .status-badge-diterima { background-color: #28a745; color: white; } 
+        .status-badge-ditolak { background-color: #dc3545; color: white; } 
     </style>
 </head>
 <body>
@@ -52,6 +52,7 @@
     <div class="d-flex">
         <div class="sidebar">
             <a th:href="@{/member/dashboard}"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a th:href="@{/member/koleksi-buku}"><i class="fas fa-book me-2"></i> Koleksi Buku</a>
             <a th:href="@{/member/peminjaman}"><i class="fas fa-book-reader me-2"></i> Peminjaman</a>
             <a th:href="@{/member/pengusulan}" class="active"><i class="fas fa-lightbulb me-2"></i> Pengusulan Buku</a>
             <a th:href="@{/member/profile}"><i class="fas fa-user-circle me-2"></i> Profile</a>

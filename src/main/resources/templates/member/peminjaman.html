@@ -81,21 +81,27 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark">
-        <div class="container">
-            <a class="navbar-brand" th:href="@{/}">KlikPustaka</a>
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">KlikPustaka</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <form th:action="@{/logout}" method="post" class="logout-form-nav">
-                        <button type="submit" class="nav-link btn btn-link logout-button-nav"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        <button type="submit" class="nav-link btn btn-link text-white" style="background: none; border: none; padding: 0;">Logout</button>
                     </form>
                 </li>
             </ul>
         </div>
+    </div>
     </nav>
 
     <div class="d-flex">
         <div class="sidebar">
             <a th:href="@{/member/dashboard}"><i class="fas fa-home me-2"></i> Dashboard</a>
+            <a th:href="@{/member/koleksi-buku}"><i class="fas fa-book me-2"></i> Koleksi Buku</a>
             <a th:href="@{/member/peminjaman}" class="active"><i class="fas fa-book-reader me-2"></i> Peminjaman</a>
             <a th:href="@{/member/pengusulan}"><i class="fas fa-lightbulb me-2"></i> Pengusulan Buku</a> 
             <a th:href="@{/member/profile}"><i class="fas fa-user-circle me-2"></i> Profile</a>
