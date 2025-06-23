@@ -10,4 +10,5 @@ import java.util.List;
 public interface PengusulanRepository extends JpaRepository<Pengusulan, Long> {
     List<Pengusulan> findByUser_UserIdOrderByTanggalPengusulanDesc(Long userId);
     List<Pengusulan> findByStatusPengusulan(Pengusulan.StatusPengusulan status);
+    long countByStatusPengusulan(Pengusulan.StatusPengusulan status);
 }

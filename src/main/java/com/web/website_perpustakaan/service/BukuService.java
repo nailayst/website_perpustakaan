@@ -156,4 +156,8 @@ public class BukuService {
     public List<Buku> getRekomendasiBuku() {
         return bukuRepository.findTop5ByOrderByTanggalTerbitDesc();
     }
+
+    public long countAllBuku() {
+        return bukuRepository.count();
+    }
 }

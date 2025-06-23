@@ -10,7 +10,7 @@ import java.util.List;
 public interface BukuRepository extends JpaRepository<Buku, Long> {
     List<Buku> findAllByOrderByBukuIdAsc();
     List<Buku> findByJudulContainingIgnoreCaseOrPenulisContainingIgnoreCaseOrPenerbitContainingIgnoreCaseOrIsbnContainingIgnoreCase(
-            String judul, String penulis, String penerbit, String isbn);
-    List<Buku> findTop5ByOrderByTanggalTerbitDesc(); 
-    List<Buku> findByStatusBuku(Buku.StatusBuku statusBuku); 
+                String judul, String penulis, String penerbit, String isbn);
+    List<Buku> findTop5ByOrderByTanggalTerbitDesc();
+    List<Buku> findByStatusBuku(Buku.StatusBuku statusBuku);
 }

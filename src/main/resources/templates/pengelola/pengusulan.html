@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manajemen Pengusulan Buku - KlikPustaka</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/pengelola.css}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="fas fa-book me-2"></i> KlikPustaka
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <form th:action="@{/logout}" method="post" class="logout-form">
+                            <button type="submit" class="nav-link btn btn-link text-white"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="wrapper">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                Pengelola Menu
+            </div>
+            <div class="sidebar-menu">
+                <a th:href="@{/pengelola/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                <a th:href="@{/pengelola/users}"><i class="fas fa-users"></i> Daftar User</a>
+                <a th:href="@{/pengelola/tambah-buku}"><i class="fas fa-book-medical"></i> Tambah Buku</a>
+                <a th:href="@{/pengelola/peminjaman}"><i class="fas fa-handshake"></i>Peminjaman</a>
+                <div class="dropdown">
+                    <a class="dropdown-toggle" href="#" role="button" id="maintenanceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-tools"></i> Pemeliharaan
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="maintenanceDropdown">
+                        <li><a class="dropdown-item" th:href="@{/pengelola/maintenance}">Daftar Maintenance</a></li>
+                        <li><a class="dropdown-item" th:href="@{/pengelola/maintenance/tambah}">Buat Maintenance</a></li>
+                    </ul>
+                </div>
+                <a th:href="@{/pengelola/pengusulan}" class="active"><i class="fas fa-clipboard-list"></i>Pengusulan</a>
+            </div>
+        </div>
+        <div class="main-content">
+            <h2 class="card-title"><i class="fas fa-clipboard-list me-2"></i> Manajemen Pengusulan Buku</h2>
+            <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    Daftar Pengusulan
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover pengusulan-table"> <thead>
+                                <tr>
+                                    <th class="col-id">ID</th>
+                                    <th class="col-judul">Judul Buku</th>
+                                    <th class="col-pengusul">Diusulkan Oleh</th>
+                                    <th class="col-tanggal">Tanggal Usulan</th>
+                                    <th class="col-status">Status</th>
+                                    <th class="col-aksi">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pengusulan : ${pengusulanList}">
+                                    <td class="col-id" th:text="${pengusulan.idPengusulan}"></td>
+                                    <td class="col-judul" th:title="${pengusulan.judulBuku}" th:text="${#strings.length(pengusulan.judulBuku) > 25 ? #strings.substring(pengusulan.judulBuku, 0, 22) + '...' : pengusulan.judulBuku}"></td>
+                                    <td class="col-pengusul" th:text="${pengusulan.user.username}"></td>
+                                    <td class="col-tanggal" th:text="${#temporals.format(pengusulan.tanggalPengusulan, 'dd-MM-yyyy')}"></td>
+                                    <td class="col-status">
+                                        <span th:with="statusBadgeClass=${pengusulan.statusPengusulan.name().equals('MENUNGGU_REVIEW')} ? 'status-badge-menunggu' : 
+                                                                     (${pengusulan.statusPengusulan.name().equals('DITERIMA')} ? 'status-badge-diterima' : 
+                                                                     'status-badge-ditolak')" 
+                                              class="badge" th:classappend="${statusBadgeClass}"
+                                              th:text="${pengusulan.statusPengusulan.name().replace('_', ' ')}"></span>
+                                    </td>
+                                    <td class="col-aksi">
+                                        <a th:href="@{/pengelola/pengusulan/{id}/detail(id=${pengusulan.idPengusulan})}" class="btn btn-primary btn-sm"><i class="fas fa-info-circle"></i> Detail</a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${pengusulanList == null or pengusulanList.empty}">
+                                    <td colspan="6" class="text-center">Belum ada pengusulan buku.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> KlikPustaka. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/common.js}"></script>
+    <script th:src="@{/js/pengelola.js}"></script>
+</body>
+</html>

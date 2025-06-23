@@ -10,4 +10,5 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Long> {
     List<Peminjaman> findByUserUserIdAndStatusPeminjaman(Long userId, Peminjaman.StatusPeminjaman status);
     List<Peminjaman> findByUserUserId(Long userId);
     List<Peminjaman> findByBuku_BukuIdAndStatusPeminjaman(Long bukuId, StatusPeminjaman statusPeminjaman);
+    long countByStatusPeminjaman(Peminjaman.StatusPeminjaman status);
 }

@@ -32,6 +32,8 @@ public class WebSecurityConfig {
         return (request, response, authentication) -> {
             if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
                 response.sendRedirect("/admin/dashboard");
+            } else if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PENGELOLA"))) { 
+                response.sendRedirect("/pengelola/dashboard");
             } else if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MEMBER"))) {
                 response.sendRedirect("/member/dashboard");
             } else {
@@ -48,6 +50,7 @@ public class WebSecurityConfig {
                                  "/upload/images/**", "/upload/pdfs/**")
                 .permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/pengelola/**").hasRole("PENGELOLA") 
                 .requestMatchers("/member/**").hasRole("MEMBER")
                 .anyRequest().authenticated()
             )
@@ -66,7 +69,7 @@ public class WebSecurityConfig {
                 .permitAll()
             )
             .userDetailsService(userDetailsService)
-            .csrf(Customizer.withDefaults()); // CSRF AKTIF
+            .csrf(Customizer.withDefaults());
 
         return http.build();
     }

@@ -3,7 +3,7 @@ package com.web.website_perpustakaan.service;
 import com.web.website_perpustakaan.model.Peminjaman;
 import com.web.website_perpustakaan.model.User;
 import com.web.website_perpustakaan.model.Buku;
-import com.web.website_perpustakaan.model.Denda; // Diperlukan untuk metode denda
+import com.web.website_perpustakaan.model.Denda;
 import com.web.website_perpustakaan.repository.PeminjamanRepository;
 import com.web.website_perpustakaan.repository.BukuRepository;
 import com.web.website_perpustakaan.repository.UserRepository;
@@ -17,7 +17,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.time.temporal.ChronoUnit; // Diperlukan untuk perhitungan tanggal
+import java.time.temporal.ChronoUnit;
 
 @Service
 public class PeminjamanService {
@@ -32,7 +32,7 @@ public class PeminjamanService {
     private UserRepository userRepository;
 
     @Autowired
-    private DendaService dendaService; // Autowired untuk interaksi dengan DendaService
+    private DendaService dendaService;
 
     @Transactional
     public Peminjaman pinjamBuku(Long userId, Long bukuId) {
@@ -98,7 +98,6 @@ public class PeminjamanService {
         return peminjamanRepository.findByUserUserId(userId).stream()
                 .filter(p -> p.getTanggalDikembalikan() == null)
                 .peek(p -> {
-                    // Logika untuk memperbarui status peminjaman menjadi TERLAMBAT secara real-time
                     if (LocalDate.now().isAfter(p.getTanggalPengembalian()) &&
                         p.getStatusPeminjaman() != Peminjaman.StatusPeminjaman.TERLAMBAT) {
                         p.setStatusPeminjaman(Peminjaman.StatusPeminjaman.TERLAMBAT);
@@ -123,12 +122,10 @@ public class PeminjamanService {
         return peminjamanRepository.findAll();
     }
 
-    // Metode BARU: Mendapatkan denda yang belum dibayar untuk user tertentu
     public List<Denda> getDendaBelumDibayarByUserId(Long userId) {
         return dendaService.getDendaBelumDibayarByUserId(userId);
     }
 
-    // Metode BARU: Mendapatkan buku yang akan jatuh tempo atau sudah terlambat
     public List<Peminjaman> getBukuAkanJatuhTempoAtauTerlambat(Long userId, int daysThreshold) {
         List<Peminjaman> peminjamanAktif = getPeminjamanAktif(userId);
         LocalDate hariIni = LocalDate.now();
@@ -142,5 +139,15 @@ public class PeminjamanService {
                     return hariSampaiJatuhTempo <= daysThreshold;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public long countByStatusPeminjaman(String status) {
+        try {
+            Peminjaman.StatusPeminjaman enumStatus = Peminjaman.StatusPeminjaman.valueOf(status.toUpperCase());
+            return peminjamanRepository.countByStatusPeminjaman(enumStatus);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid Peminjaman Status: " + status + ". Error: " + e.getMessage());
+            return 0; 
+        }
     }
 }

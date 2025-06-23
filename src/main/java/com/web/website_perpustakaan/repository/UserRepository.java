@@ -4,11 +4,16 @@ import com.web.website_perpustakaan.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     User findByUsername(String username);
-    User findByEmail(String email); // Ditambahkan untuk mendukung login dengan email
+    User findByEmail(String email);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
     long countByLevelUser_LevelUser(String levelUser);
+    List<User> findByUsernameContainingIgnoreCaseOrProfile_NamaLengkapContainingIgnoreCaseOrEmailContainingIgnoreCase(
+        String username, String namaLengkap, String email
+    );
 }
