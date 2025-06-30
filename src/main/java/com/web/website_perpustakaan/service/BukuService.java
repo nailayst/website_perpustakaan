@@ -15,7 +15,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BukuService {
@@ -67,10 +69,20 @@ public class BukuService {
                 throw new IllegalArgumentException("Ukuran file PDF maksimal 10MB.");
             }
 
-            String pdfName = bukuId + "_file.pdf";
-            Path pdfPath = PDF_DIR.resolve(pdfName);
-            Files.copy(pdfFile.getInputStream(), pdfPath, StandardCopyOption.REPLACE_EXISTING);
-            savedBuku.setPdfPath("/upload/pdfs/" + pdfName);
+            Optional<Buku> existingBukuOptional = bukuRepository.findById(buku.getBukuId());
+            Buku existingBuku = existingBukuOptional.orElseThrow(() -> new IllegalArgumentException("Buku tidak ditemukan saat update path PDF."));
+
+
+            if (existingBuku.getPdfPath() != null && !existingBuku.getPdfPath().isEmpty()) {
+                String oldFileName = existingBuku.getPdfPath().substring(existingBuku.getPdfPath().lastIndexOf("/") + 1);
+                Path oldFilePath = PDF_DIR.resolve(oldFileName);
+                Files.deleteIfExists(oldFilePath);
+            }
+
+            String newFileName = existingBuku.getBukuId() + "_file.pdf";
+            Path newFilePath = PDF_DIR.resolve(newFileName);
+            Files.copy(pdfFile.getInputStream(), newFilePath, StandardCopyOption.REPLACE_EXISTING);
+            savedBuku.setPdfPath("/upload/pdfs/" + newFileName);
         }
 
         bukuRepository.save(savedBuku);
@@ -158,6 +170,15 @@ public class BukuService {
     }
 
     public long countAllBuku() {
+        return bukuRepository.count();
+    }
+
+    public Map<String, Long> countBukuPerKategori() {
+        return bukuRepository.findAll().stream()
+                .collect(Collectors.groupingBy(Buku::getKategori, Collectors.counting()));
+    }
+
+    public long getTotalBuku() { 
         return bukuRepository.count();
     }
 }

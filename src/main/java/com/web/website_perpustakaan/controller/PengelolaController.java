@@ -3,8 +3,8 @@ package com.web.website_perpustakaan.controller;
 import com.web.website_perpustakaan.model.*;
 import com.web.website_perpustakaan.model.Maintenance.JenisMaintenance;
 import com.web.website_perpustakaan.model.Maintenance.StatusMaintenance;
-import com.web.website_perpustakaan.repository.UserRepository;
-import com.web.website_perpustakaan.service.*;
+import com.web.website_perpustakaan.repository.UserRepository; 
+import com.web.website_perpustakaan.service.*; 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,16 +24,21 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+
 @Controller
 @RequestMapping("/pengelola")
 @PreAuthorize("hasRole('PENGELOLA')")
 public class PengelolaController {
 
-    private final BukuService bukuService;
+    private final BukuService bukuService; 
     @Autowired
     private UserService userService;
     @Autowired
-    private UserRepository userRepository; // Jika pengelola perlu melihat daftar user
+    private UserRepository userRepository; 
     @Autowired
     private PeminjamanService peminjamanService;
     @Autowired
@@ -50,7 +55,7 @@ public class PengelolaController {
     public ResponseEntity<Buku> getBukuData(@PathVariable Long id) {
         Optional<Buku> buku = bukuService.getBukuById(id);
         return buku.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                   .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/dashboard")
@@ -60,24 +65,55 @@ public class PengelolaController {
         model.addAttribute("pengelola", pengelola);
 
         long totalBuku = bukuService.countAllBuku();
-        long totalPeminjamanAktif = peminjamanService.countByStatusPeminjaman("DIPINJAM"); 
-        long totalPengusulanBaru = pengusulanService.countByStatusPengusulan("MENUNGGU_REVIEW"); 
+        long totalPeminjamanAktif = peminjamanService.countByStatusPeminjaman("DIPINJAM");
+        long totalPengusulanBaru = pengusulanService.countByStatusPengusulan("MENUNGGU_REVIEW");
+        long totalMembers = userRepository.countByLevelUser_LevelUser("member");
+        long totalAdmins = userRepository.countByLevelUser_LevelUser("admin");
+        long totalPengelolaUser = userRepository.countByLevelUser_LevelUser("pengelola"); 
 
         model.addAttribute("totalBuku", totalBuku);
         model.addAttribute("totalPeminjamanAktif", totalPeminjamanAktif);
         model.addAttribute("totalPengusulanBaru", totalPengusulanBaru);
+        model.addAttribute("totalMembers", totalMembers);
+        model.addAttribute("totalAdmins", totalAdmins);
+        model.addAttribute("totalPengelola", totalPengelolaUser); 
 
         return "pengelola/dashboard";
     }
 
- 
     @GetMapping("/users")
-    public String listUsers(Model model) {
-        List<User> users = userRepository.findAll();
-        model.addAttribute("users", users);
-        return "pengelola/users"; 
-    }
+    public String listUsers(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "username,asc") String sort, 
+            Model model) {
+        
+        String[] sortParams = sort.split(",");
+        String sortBy = sortParams[0];
+        Sort.Direction sortDirection = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sortOrder = Sort.by(sortDirection, sortBy);
 
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+        
+        Page<User> userPage;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            userPage = userService.searchUsersPaginated(keyword, pageable);
+            model.addAttribute("keyword", keyword); 
+        } else {
+            userPage = userRepository.findAll(pageable); 
+        }
+
+        model.addAttribute("userPage", userPage); 
+        model.addAttribute("currentPage", userPage.getNumber());
+        model.addAttribute("pageSize", userPage.getSize());
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalElements", userPage.getTotalElements());
+        model.addAttribute("sortField", sortBy);
+        model.addAttribute("sortDirection", sortDirection.toString().toLowerCase());
+
+        return "pengelola/users";
+    }
 
     @GetMapping("/tambah-buku")
     public String tampilkanFormTambahBuku(Model model, @RequestParam(value = "success", required = false) Boolean success) {
@@ -139,34 +175,82 @@ public class PengelolaController {
     }
 
     @GetMapping("/peminjaman")
-    public String getPeminjaman(Model model) {
+    public String getPeminjaman(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "tanggalPeminjaman,desc") String sort,
+            Model model) {
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User pengelola = userService.findByUsername(username);
         model.addAttribute("pengelola", pengelola);
 
-        List<Peminjaman> peminjamanList = peminjamanService.getAllPeminjaman();
-        model.addAttribute("peminjamanList", peminjamanList);
+        String[] sortParams = sort.split(",");
+        String sortBy = sortParams[0];
+        Sort.Direction sortDirection = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sortOrder = Sort.by(sortDirection, sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+        
+        Page<Peminjaman> peminjamanPage;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            peminjamanPage = peminjamanService.searchPeminjamanPaginated(keyword, pageable);
+            model.addAttribute("keyword", keyword); 
+        } else {
+            peminjamanPage = peminjamanService.getAllPeminjamanPaginated(pageable);
+        }
+
+        model.addAttribute("peminjamanPage", peminjamanPage); 
+        model.addAttribute("currentPage", peminjamanPage.getNumber());
+        model.addAttribute("pageSize", peminjamanPage.getSize());
+        model.addAttribute("totalPages", peminjamanPage.getTotalPages());
+        model.addAttribute("totalElements", peminjamanPage.getTotalElements());
+        model.addAttribute("sortField", sortBy);
+        model.addAttribute("sortDirection", sortDirection.toString().toLowerCase());
+
         return "pengelola/peminjaman";
     }
 
     @GetMapping("/maintenance")
-    public String getMaintenance(Model model) {
+    public String getMaintenance(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "tanggalMaintenance,desc") String sort,
+            Model model) {
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User pengelola = userService.findByUsername(username);
         model.addAttribute("pengelola", pengelola);
 
-        List<Buku> daftarBuku = java.util.Collections.emptyList();
-        List<Maintenance> maintenanceList = java.util.Collections.emptyList();
-        try {
-            daftarBuku = bukuService.getSemuaBuku();
-            maintenanceList = maintenanceService.getAllMaintenance();
-        } catch (Exception e) {
-            model.addAttribute("error", "Gagal memuat data maintenance: " + e.getMessage());
-        }
+        String[] sortParams = sort.split(",");
+        String sortBy = sortParams[0];
+        Sort.Direction sortDirection = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sortOrder = Sort.by(sortDirection, sortBy);
 
-        model.addAttribute("daftarBuku", daftarBuku);
-        model.addAttribute("maintenanceList", maintenanceList);
-        return "pengelola/daftar-maintenance";
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+        
+        Page<Maintenance> maintenancePage;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            maintenancePage = maintenanceService.searchMaintenancePaginated(keyword, pageable);
+            model.addAttribute("keyword", keyword); 
+        } else {
+            maintenancePage = maintenanceService.getAllMaintenancePaginated(pageable);
+        }
+        
+        List<Buku> daftarBuku = bukuService.getSemuaBuku(); 
+        model.addAttribute("daftarBuku", daftarBuku); 
+
+        model.addAttribute("maintenancePage", maintenancePage); 
+        model.addAttribute("currentPage", maintenancePage.getNumber());
+        model.addAttribute("pageSize", maintenancePage.getSize());
+        model.addAttribute("totalPages", maintenancePage.getTotalPages());
+        model.addAttribute("totalElements", maintenancePage.getTotalElements());
+        model.addAttribute("sortField", sortBy);
+        model.addAttribute("sortDirection", sortDirection.toString().toLowerCase());
+
+        return "pengelola/maintenance";
     }
 
     @GetMapping("/maintenance/tambah")
@@ -310,20 +394,42 @@ public class PengelolaController {
     }
 
     @GetMapping("/pengusulan")
-    public String listPengusulan(Model model) {
+    public String listPengusulan(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "tanggalPengusulan,desc") String sort, 
+            Model model) {
+
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         User pengelola = userService.findByUsername(username);
         model.addAttribute("pengelola", pengelola);
 
-        List<Pengusulan> pengusulanList = java.util.Collections.emptyList();
-        try {
-            pengusulanList = pengusulanService.getAllPengusulanBuku();
-        } catch (Exception e) {
-            model.addAttribute("error", "Gagal memuat data pengusulan buku: " + e.getMessage());
+        String[] sortParams = sort.split(",");
+        String sortBy = sortParams[0];
+        Sort.Direction sortDirection = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sortOrder = Sort.by(sortDirection, sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+        
+        Page<Pengusulan> pengusulanPage;
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            pengusulanPage = pengusulanService.searchPengusulanPaginated(keyword, pageable);
+            model.addAttribute("keyword", keyword); 
+        } else {
+            pengusulanPage = pengusulanService.getAllPengusulanPaginated(pageable);
         }
 
-        model.addAttribute("pengusulanList", pengusulanList);
-        model.addAttribute("StatusPengusulanEnum", Pengusulan.StatusPengusulan.class);
+        model.addAttribute("pengusulanPage", pengusulanPage); 
+        model.addAttribute("currentPage", pengusulanPage.getNumber());
+        model.addAttribute("pageSize", pengusulanPage.getSize());
+        model.addAttribute("totalPages", pengusulanPage.getTotalPages());
+        model.addAttribute("totalElements", pengusulanPage.getTotalElements());
+        model.addAttribute("sortField", sortBy);
+        model.addAttribute("sortDirection", sortDirection.toString().toLowerCase());
+
+        model.addAttribute("StatusPengusulanEnum", Pengusulan.StatusPengusulan.class); 
+
         return "pengelola/pengusulan";
     }
 
@@ -356,7 +462,7 @@ public class PengelolaController {
         try {
             pengusulanService.updateStatusPengusulan(idPengusulan, newStatus);
             redirectAttributes.addFlashAttribute("success", "Status pengusulan buku berhasil diperbarui!");
-        }  catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Terjadi kesalahan sistem saat memperbarui status pengusulan.");

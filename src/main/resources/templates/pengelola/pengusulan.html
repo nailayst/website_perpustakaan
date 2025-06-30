@@ -56,32 +56,76 @@
             <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
             <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
 
+            <div class="card mb-3">
+                <div class="card-body py-2">
+                    <form th:action="@{/pengelola/pengusulan}" method="get" class="d-flex align-items-center">
+                        <input type="text" name="keyword" class="form-control form-control-sm me-2" placeholder="Cari berdasarkan Judul Buku atau Pengusul..." th:value="${keyword}">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Cari</button>
+                        <a th:href="@{/pengelola/pengusulan}" class="btn btn-secondary btn-sm ms-2"><i class="fas fa-sync-alt"></i> Reset</a>
+                        
+                        <div class="d-flex align-items-center ms-auto">
+                            <label for="pageSizeSelect" class="form-label mb-0 me-2 small">Tampilkan:</label>
+                            <select id="pageSizeSelect" name="size" class="form-select form-select-sm" onchange="this.form.submit()" style="width: auto;">
+                                <option value="5" th:selected="${pageSize == 5}">5</option>
+                                <option value="10" th:selected="${pageSize == 10}">10</option>
+                                <option value="25" th:selected="${pageSize == 25}">25</option>
+                                <option value="50" th:selected="${pageSize == 50}">50</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <div class="card mb-4">
                 <div class="card-header">
                     Daftar Pengusulan
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover pengusulan-table"> <thead>
+                        <table class="table table-hover pengusulan-table"> 
+                            <thead>
                                 <tr>
-                                    <th class="col-id">ID</th>
-                                    <th class="col-judul">Judul Buku</th>
-                                    <th class="col-pengusul">Diusulkan Oleh</th>
-                                    <th class="col-tanggal">Tanggal Usulan</th>
-                                    <th class="col-status">Status</th>
-                                    <th class="col-aksi">Aksi</th>
-                                </tr>
+                                    <th class="col-id">
+                                        <a th:href="@{/pengelola/pengusulan(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='idPengusulan,' + (${sortField == 'idPengusulan' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'idPengusulan' ? 'text-primary' : 'text-dark'}">
+                                            ID <i th:classappend="${sortField == 'idPengusulan' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-judul">
+                                        <a th:href="@{/pengelola/pengusulan(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='judulBuku,' + (${sortField == 'judulBuku' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'judulBuku' ? 'text-primary' : 'text-dark'}">
+                                            Judul Buku <i th:classappend="${sortField == 'judulBuku' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-pengusul">
+                                        <a th:href="@{/pengelola/pengusulan(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='user.username,' + (${sortField == 'user.username' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'user.username' ? 'text-primary' : 'text-dark'}">
+                                            Diusulkan Oleh <i th:classappend="${sortField == 'user.username' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-tanggal">
+                                        <a th:href="@{/pengelola/pengusulan(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='tanggalPengusulan,' + (${sortField == 'tanggalPengusulan' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'tanggalPengusulan' ? 'text-primary' : 'text-dark'}">
+                                            Tanggal Usulan <i th:classappend="${sortField == 'tanggalPengusulan' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-status">
+                                        <a th:href="@{/pengelola/pengusulan(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='statusPengusulan,' + (${sortField == 'statusPengusulan' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'statusPengusulan' ? 'text-primary' : 'text-dark'}">
+                                            Status <i th:classappend="${sortField == 'statusPengusulan' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-aksi">Aksi</th> </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="pengusulan : ${pengusulanList}">
-                                    <td class="col-id" th:text="${pengusulan.idPengusulan}"></td>
+                                <tr th:each="pengusulan : ${pengusulanPage.content}"> <td class="col-id" th:text="${pengusulan.idPengusulan}"></td>
                                     <td class="col-judul" th:title="${pengusulan.judulBuku}" th:text="${#strings.length(pengusulan.judulBuku) > 25 ? #strings.substring(pengusulan.judulBuku, 0, 22) + '...' : pengusulan.judulBuku}"></td>
                                     <td class="col-pengusul" th:text="${pengusulan.user.username}"></td>
                                     <td class="col-tanggal" th:text="${#temporals.format(pengusulan.tanggalPengusulan, 'dd-MM-yyyy')}"></td>
                                     <td class="col-status">
                                         <span th:with="statusBadgeClass=${pengusulan.statusPengusulan.name().equals('MENUNGGU_REVIEW')} ? 'status-badge-menunggu' : 
-                                                                     (${pengusulan.statusPengusulan.name().equals('DITERIMA')} ? 'status-badge-diterima' : 
-                                                                     'status-badge-ditolak')" 
+                                                                           (${pengusulan.statusPengusulan.name().equals('DITERIMA')} ? 'status-badge-diterima' : 
+                                                                           'status-ditolak')" 
                                               class="badge" th:classappend="${statusBadgeClass}"
                                               th:text="${pengusulan.statusPengusulan.name().replace('_', ' ')}"></span>
                                     </td>
@@ -89,17 +133,45 @@
                                         <a th:href="@{/pengelola/pengusulan/{id}/detail(id=${pengusulan.idPengusulan})}" class="btn btn-primary btn-sm"><i class="fas fa-info-circle"></i> Detail</a>
                                     </td>
                                 </tr>
-                                <tr th:if="${pengusulanList == null or pengusulanList.empty}">
-                                    <td colspan="6" class="text-center">Belum ada pengusulan buku.</td>
-                                </tr>
+                                <tr th:if="${pengusulanPage.empty}"> <td colspan="6" class="text-center">Belum ada pengusulan buku.</td> </tr>
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <div class="row align-items-center mt-3">
+                        <div class="col-md-6">
+                            <span class="text-muted" th:if="${pengusulanPage.totalElements > 0}">
+                                Menampilkan data ke 
+                                <span th:text="${pengusulanPage.number * pengusulanPage.size + 1}"></span>
+                                sampai 
+                                <span th:text="${pengusulanPage.number * pengusulanPage.size + pengusulanPage.numberOfElements}"></span>
+                                dari total <span th:text="${pengusulanPage.totalElements}"></span> Data.
+                            </span>
+                            <span class="text-muted" th:if="${pengusulanPage.totalElements == 0}">
+                                Tidak ada data yang ditemukan.
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <nav aria-label="Page navigation" th:if="${pengusulanPage.totalPages > 1}">
+                                <ul class="pagination justify-content-end mb-0">
+                                    <li class="page-item" th:classappend="${pengusulanPage.first ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/pengelola/pengusulan(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}">Previous</a>
+                                    </li>
+                                    <li class="page-item" th:each="i : ${#numbers.sequence(0, pengusulanPage.totalPages - 1)}"
+                                        th:classappend="${i == currentPage ? 'active' : ''}">
+                                        <a class="page-link" th:href="@{/pengelola/pengusulan(page=${i}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}" th:text="${i + 1}"></a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${pengusulanPage.last ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/pengelola/pengusulan(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
     <footer>
         <div class="container">
             <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> KlikPustaka. All rights reserved.</p>

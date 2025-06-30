@@ -59,42 +59,120 @@
             <div th:if="${#vars['error'] != null}" class="alert alert-danger" role="alert">
                 <span th:text="${error}"></span>
             </div>
+            
+            <div class="card mb-3">
+                <div class="card-body py-2">
+                    <form th:action="@{/pengelola/peminjaman}" method="get" class="d-flex align-items-center">
+                        <input type="text" name="keyword" class="form-control form-control-sm me-2" placeholder="Cari berdasarkan Nama Peminjam atau Judul Buku..." th:value="${keyword}">
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Cari</button>
+                        <a th:href="@{/pengelola/peminjaman}" class="btn btn-secondary btn-sm ms-2"><i class="fas fa-sync-alt"></i> Reset</a>
+                        
+                        <div class="d-flex align-items-center ms-auto">
+                            <label for="pageSizeSelect" class="form-label mb-0 me-2 small">Tampilkan:</label>
+                            <select id="pageSizeSelect" name="size" class="form-select form-select-sm" onchange="this.form.submit()" style="width: auto;">
+                                <option value="5" th:selected="${pageSize == 5}">5</option>
+                                <option value="10" th:selected="${pageSize == 10}">10</option>
+                                <option value="25" th:selected="${pageSize == 25}">25</option>
+                                <option value="50" th:selected="${pageSize == 50}">50</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header">
                     Daftar Semua Peminjaman
                 </div>
                 <div class="card-body">
-                    <div th:if="${peminjamanList == null or peminjamanList.isEmpty()}">
-                        <p class="card-text text-center">Tidak ada catatan peminjaman.</p>
+                    <div class="table-responsive">
+                        <table class="table table-striped peminjaman-table"> <thead>
+                                <tr>
+                                    <th class="col-nama">
+                                        <a th:href="@{/pengelola/peminjaman(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='user.profile.namaLengkap,' + (${sortField == 'user.profile.namaLengkap' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'user.profile.namaLengkap' ? 'text-primary' : 'text-dark'}">
+                                            Nama Peminjam <i th:classappend="${sortField == 'user.profile.namaLengkap' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-judul">
+                                        <a th:href="@{/pengelola/peminjaman(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='buku.judul,' + (${sortField == 'buku.judul' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'buku.judul' ? 'text-primary' : 'text-dark'}">
+                                            Judul Buku <i th:classappend="${sortField == 'buku.judul' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-tanggal">
+                                        <a th:href="@{/pengelola/peminjaman(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='tanggalPeminjaman,' + (${sortField == 'tanggalPeminjaman' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'tanggalPeminjaman' ? 'text-primary' : 'text-dark'}">
+                                            Tanggal Peminjaman <i th:classappend="${sortField == 'tanggalPeminjaman' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-tanggal">
+                                        <a th:href="@{/pengelola/peminjaman(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='tanggalPengembalian,' + (${sortField == 'tanggalPengembalian' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'tanggalPengembalian' ? 'text-primary' : 'text-dark'}">
+                                            Tanggal Pengembalian <i th:classappend="${sortField == 'tanggalPengembalian' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-status">
+                                        <a th:href="@{/pengelola/peminjaman(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='statusPeminjaman,' + (${sortField == 'statusPeminjaman' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'statusPeminjaman' ? 'text-primary' : 'text-dark'}">
+                                            Status <i th:classappend="${sortField == 'statusPeminjaman' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-denda">
+                                        <a th:href="@{/pengelola/peminjaman(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='denda.jumlahDenda,' + (${sortField == 'denda.jumlahDenda' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'denda.jumlahDenda' ? 'text-primary' : 'text-dark'}">
+                                            Denda <i th:classappend="${sortField == 'denda.jumlahDenda' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="peminjaman : ${peminjamanPage.content}"> <td class="col-nama" th:text="${peminjaman.user?.profile?.namaLengkap ?: 'Tidak Tersedia'}"></td>
+                                    <td class="col-judul" th:text="${peminjaman.buku?.judul ?: 'Tidak Tersedia'}"></td>
+                                    <td class="col-tanggal" th:text="${peminjaman.tanggalPeminjaman != null ? #temporals.format(peminjaman.tanggalPeminjaman, 'dd-MM-yyyy') : 'Tidak Tersedia'}"></td>
+                                    <td class="col-tanggal" th:text="${peminjaman.tanggalPengembalian != null ? #temporals.format(peminjaman.tanggalPengembalian, 'dd-MM-yyyy') : 'Tidak Tersedia'}"></td>
+                                    <td class="col-status" th:text="${peminjaman.statusPeminjaman ?: 'Tidak Tersedia'}"></td>
+                                    <td class="col-denda">
+                                        <span th:if="${peminjaman.denda != null}">
+                                            <span th:text="'Rp ' + ${#numbers.formatDecimal(peminjaman.denda.jumlahDenda, 0, 'COMMA', 2, 'POINT')}"></span>
+                                        </span>
+                                        <span th:unless="${peminjaman.denda != null}">Tidak ada</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${peminjamanPage.empty}"> <td colspan="6" class="text-center">Tidak ada catatan peminjaman.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div th:unless="${peminjamanList == null or peminjamanList.isEmpty()}">
-                        <div class="table-responsive">
-                            <table class="table table-striped maintenance-table"> <thead>
-                                    <tr>
-                                        <th class="col-nama">Nama Peminjam</th>
-                                        <th class="col-judul">Judul Buku</th>
-                                        <th class="col-tanggal">Tanggal Peminjaman</th>
-                                        <th class="col-tanggal">Tanggal Pengembalian</th>
-                                        <th class="col-status">Status</th>
-                                        <th class="col-denda">Denda</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="peminjaman : ${peminjamanList}">
-                                        <td class="col-nama" th:text="${peminjaman.user?.profile?.namaLengkap ?: 'Tidak Tersedia'}"></td>
-                                        <td class="col-judul" th:text="${peminjaman.buku?.judul ?: 'Tidak Tersedia'}"></td>
-                                        <td class="col-tanggal" th:text="${peminjaman.tanggalPeminjaman != null ? #temporals.format(peminjaman.tanggalPeminjaman, 'dd-MM-yyyy') : 'Tidak Tersedia'}"></td>
-                                        <td class="col-tanggal" th:text="${peminjaman.tanggalPengembalian != null ? #temporals.format(peminjaman.tanggalPengembalian, 'dd-MM-yyyy') : 'Tidak Tersedia'}"></td>
-                                        <td class="col-status" th:text="${peminjaman.statusPeminjaman ?: 'Tidak Tersedia'}"></td>
-                                        <td class="col-denda">
-                                            <span th:if="${peminjaman.denda != null}">
-                                                <span th:text="'Rp ' + ${peminjaman.denda.jumlahDenda}"></span>
-                                            </span>
-                                            <span th:unless="${peminjaman.denda != null}">Tidak ada</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                    
+                    <div class="row align-items-center mt-3">
+                        <div class="col-md-6">
+                            <span class="text-muted" th:if="${peminjamanPage.totalElements > 0}">
+                                Menampilkan data ke 
+                                <span th:text="${peminjamanPage.number * peminjamanPage.size + 1}"></span>
+                                sampai 
+                                <span th:text="${peminjamanPage.number * peminjamanPage.size + peminjamanPage.numberOfElements}"></span>
+                                dari total <span th:text="${peminjamanPage.totalElements}"></span> Data.
+                            </span>
+                            <span class="text-muted" th:if="${peminjamanPage.totalElements == 0}">
+                                Tidak ada data yang ditemukan.
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <nav aria-label="Page navigation" th:if="${peminjamanPage.totalPages > 1}">
+                                <ul class="pagination justify-content-end mb-0">
+                                    <li class="page-item" th:classappend="${peminjamanPage.first ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/pengelola/peminjaman(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}">Previous</a>
+                                    </li>
+                                    <li class="page-item" th:each="i : ${#numbers.sequence(0, peminjamanPage.totalPages - 1)}"
+                                        th:classappend="${i == currentPage ? 'active' : ''}">
+                                        <a class="page-link" th:href="@{/pengelola/peminjaman(page=${i}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}" th:text="${i + 1}"></a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${peminjamanPage.last ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/pengelola/peminjaman(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
                     </div>
                 </div>

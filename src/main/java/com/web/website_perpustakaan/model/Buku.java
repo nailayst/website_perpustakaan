@@ -50,11 +50,11 @@ public class Buku {
     private KondisiBuku kondisi = KondisiBuku.BAIK;
 
     public enum StatusBuku {
-    TERSEDIA, DALAM_PERBAIKAN, DITARIK
+        TERSEDIA, DALAM_PERBAIKAN, DITARIK
     }
 
     public enum KondisiBuku {
-    BAIK, RUSAK_RINGAN, RUSAK_BERAT
+        BAIK, RUSAK_RINGAN, RUSAK_BERAT
     }
 
     public Long getBukuId() { return bukuId; }

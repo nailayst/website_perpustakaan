@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Laporan Keterlambatan</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10pt; color: #333; margin: 20px; }
+        h1 { font-size: 16pt; color: #1a3c5e; text-align: center; margin-bottom: 20px; }
+        h2 { font-size: 12pt; color: #1a3c5e; margin-top: 20px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .footer { text-align: center; font-size: 8pt; color: #777; margin-top: 30px; }
+        .header-info { text-align: center; margin-bottom: 20px; font-size: 9pt; }
+    </style>
+</head>
+<body>
+    <div class="header-info">
+        <h1>Laporan Statistik Keterlambatan Buku</h1>
+        <p>Tanggal Laporan: <span th:text="${reportDate}"></span></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Peminjaman ID</th>
+                <th>Judul Buku</th>
+                <th>Peminjam</th>
+                <th>Tanggal Jatuh Tempo</th>
+                <th>Tanggal Dikembalikan</th>
+                <th>Hari Terlambat</th>
+                <th>Jumlah Denda (Rp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${dataList}">
+                <td th:text="${p.peminjamanId}"></td>
+                <td th:text="${p.buku?.judul ?: 'N/A'}"></td>
+                <td th:text="${p.user?.profile?.namaLengkap ?: 'N/A'}"></td>
+                <td th:text="${p.tanggalPengembalian != null ? #temporals.format(p.tanggalPengembalian, 'dd-MM-yyyy') : 'N/A'}"></td>
+                <td th:text="${p.tanggalDikembalikan != null ? #temporals.format(p.tanggalDikembalikan, 'dd-MM-yyyy') : 'Belum'}"></td>
+                <td th:text="${p.tanggalPengembalian != null ? T(java.time.temporal.ChronoUnit).DAYS.between(p.tanggalPengembalian, p.tanggalDikembalikan != null ? p.tanggalDikembalikan : T(java.time.LocalDate).now()) : 'N/A'}"></td>
+                <td th:text="${p.denda != null ? #numbers.formatDecimal(p.getDenda().getJumlahDenda(), 0, 'COMMA', 2, 'POINT') : '0.00'}"></td>
+            </tr>
+            <tr th:if="${dataList.empty}">
+                <td colspan="7" style="text-align: center;">Tidak ada buku terlambat.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>© <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> KlikPustaka. All rights reserved.</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Laporan Peminjaman</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 7.5pt; color: #333; margin: 20px; }
+        h1 { font-size: 13pt; color: #1a3c5e; text-align: center; margin-bottom: 12px; }
+        h2 { font-size: 10pt; color: #1a3c5e; margin-top: 12px; margin-bottom: 6px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 4px; text-align: left; vertical-align: top; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .footer { text-align: center; font-size: 6.5pt; color: #777; margin-top: 15px; }
+        .header-info { text-align: center; margin-bottom: 15px; font-size: 7.5pt; }
+
+        table th:nth-child(1), table td:nth-child(1) { width: 10%; word-wrap: break-word; } 
+        table th:nth-child(2), table td:nth-child(2) { width: 20%; word-wrap: break-word; } 
+        table th:nth-child(3), table td:nth-child(3) { width: 13%; word-wrap: break-word; } 
+        table th:nth-child(4), table td:nth-child(4) { width: 10%; } 
+        table th:nth-child(5), table td:nth-child(5) { width: 10%; } 
+        table th:nth-child(6), table td:nth-child(6) { width: 10%; } 
+        table th:nth-child(7), table td:nth-child(7) { width: 12%; white-space: nowrap; overflow: hidden; text-overflow: clip; } 
+        table th:nth-child(8), table td:nth-child(8) { width: 10%; }
+    </style>
+</head>
+<body>
+    <div class="header-info">
+        <h1>Laporan Statistik Peminjaman</h1>
+        <p>Tanggal Laporan: <span th:text="${reportDate}"></span></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Peminjaman ID</th>
+                <th>Judul Buku</th>
+                <th>Peminjam</th>
+                <th>Tanggal Pinjam</th>
+                <th>Tanggal Jatuh Tempo</th>
+                <th>Tanggal Kembali</th>
+                <th>Status</th>
+                <th>Denda (Rp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="p : ${dataList}">
+                <td th:text="${p.peminjamanId}"></td>
+                <td th:text="${p.buku?.judul ?: 'N/A'}"></td>
+                <td th:text="${p.user?.profile?.namaLengkap ?: 'N/A'}"></td>
+                <td th:text="${p.tanggalPeminjaman != null ? #temporals.format(p.tanggalPeminjaman, 'dd-MM-yyyy') : 'N/A'}"></td>
+                <td th:text="${p.tanggalPengembalian != null ? #temporals.format(p.tanggalPengembalian, 'dd-MM-yyyy') : 'N/A'}"></td>
+                <td th:text="${p.tanggalDikembalikan != null ? #temporals.format(p.tanggalDikembalikan, 'dd-MM-yyyy') : 'Belum'}"></td>
+                <td th:text="${p.getStatusPeminjaman() != null ? p.getStatusPeminjaman().name().replace('_', ' ') : 'N/A'}"></td>
+                <td th:text="${p.getDenda() != null ? #numbers.formatDecimal(p.getDenda().getJumlahDenda, 0, 'COMMA', 2, 'POINT') : '0.00'}"></td>
+            </tr>
+            <tr th:if="${dataList.empty}">
+                <td colspan="8" style="text-align: center;">Tidak ada data peminjaman.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>© <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> KlikPustaka. All rights reserved.</p>
+    </div>
+</body>
+</html>

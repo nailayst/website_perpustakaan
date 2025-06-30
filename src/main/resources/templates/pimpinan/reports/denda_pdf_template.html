@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Laporan Denda</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 10pt; color: #333; margin: 20px; }
+        h1 { font-size: 16pt; color: #1a3c5e; text-align: center; margin-bottom: 20px; }
+        h2 { font-size: 12pt; color: #1a3c5e; margin-top: 20px; margin-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .footer { text-align: center; font-size: 8pt; color: #777; margin-top: 30px; }
+        .header-info { text-align: center; margin-bottom: 20px; font-size: 9pt; }
+    </style>
+</head>
+<body>
+    <div class="header-info">
+        <h1>Laporan Statistik Denda</h1>
+        <p>Tanggal Laporan: <span th:text="${reportDate}"></span></p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Denda ID</th>
+                <th>Peminjaman ID</th>
+                <th>Jumlah Denda (Rp)</th>
+                <th>Status Pembayaran</th>
+                <th>Tanggal Dibuat</th>
+                <th>Tanggal Pembayaran</th>
+                <th>Keterangan</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="d : ${dataList}">
+                <td th:text="${d.dendaId}"></td>
+                <td th:text="${d.peminjamanId}"></td>
+                <td th:text="${#numbers.formatDecimal(d.getJumlahDenda(), 0, 'COMMA', 2, 'POINT')}"></td>
+                <td th:text="${d.statusPembayaran != null ? d.statusPembayaran.name().replace('_', ' ') : 'N/A'}"></td>
+                <td th:text="${d.tanggalDibuat != null ? #temporals.format(d.getTanggalDibuat(), 'dd-MM-yyyy') : 'N/A'}"></td>
+                <td th:text="${d.tanggalPembayaran != null ? #temporals.format(d.getTanggalPembayaran(), 'dd-MM-yyyy') : 'Belum Dibayar'}"></td>
+                <td th:text="${d.keterangan ?: '-'}"></td>
+            </tr>
+            <tr th:if="${dataList.empty}">
+                <td colspan="7" style="text-align: center;">Tidak ada data denda.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>© <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> KlikPustaka. All rights reserved.</p> </div>
+</body>
+</html>

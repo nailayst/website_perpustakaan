@@ -32,8 +32,10 @@ public class WebSecurityConfig {
         return (request, response, authentication) -> {
             if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
                 response.sendRedirect("/admin/dashboard");
-            } else if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PENGELOLA"))) { 
+            } else if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PENGELOLA"))) {
                 response.sendRedirect("/pengelola/dashboard");
+            } else if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PIMPINAN"))) { 
+                response.sendRedirect("/pimpinan/dashboard");
             } else if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MEMBER"))) {
                 response.sendRedirect("/member/dashboard");
             } else {
@@ -50,7 +52,8 @@ public class WebSecurityConfig {
                                  "/upload/images/**", "/upload/pdfs/**")
                 .permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/pengelola/**").hasRole("PENGELOLA") 
+                .requestMatchers("/pengelola/**").hasRole("PENGELOLA")
+                .requestMatchers("/pimpinan/**").hasRole("PIMPINAN")
                 .requestMatchers("/member/**").hasRole("MEMBER")
                 .anyRequest().authenticated()
             )

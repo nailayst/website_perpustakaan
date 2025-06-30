@@ -1,18 +1,26 @@
 package com.web.website_perpustakaan.service;
 
-import com.web.website_perpustakaan.model.*;
-import com.web.website_perpustakaan.model.Buku.StatusBuku;
+import com.web.website_perpustakaan.model.Buku;
+import com.web.website_perpustakaan.model.Maintenance;
+import com.web.website_perpustakaan.model.Peminjaman;
+import com.web.website_perpustakaan.model.Maintenance.JenisMaintenance;
+import com.web.website_perpustakaan.model.Maintenance.StatusMaintenance;
 import com.web.website_perpustakaan.model.Buku.KondisiBuku;
+import com.web.website_perpustakaan.model.Buku.StatusBuku;
 import com.web.website_perpustakaan.model.Peminjaman.StatusPeminjaman;
-import com.web.website_perpustakaan.model.Maintenance.*;
-import com.web.website_perpustakaan.repository.*;
+import com.web.website_perpustakaan.repository.BukuRepository;
+import com.web.website_perpustakaan.repository.MaintenanceRepository;
+import com.web.website_perpustakaan.repository.PeminjamanRepository;
+import jakarta.transaction.Transactional; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page; 
+import org.springframework.data.domain.Pageable; 
 
 @Service
 public class MaintenanceService {
@@ -91,6 +99,16 @@ public class MaintenanceService {
         return maintenanceRepository.findAll();
     }
 
+    public Page<Maintenance> getAllMaintenancePaginated(Pageable pageable) {
+        return maintenanceRepository.findAll(pageable); 
+    }
+
+    public Page<Maintenance> searchMaintenancePaginated(String keyword, Pageable pageable) {
+        return maintenanceRepository.findByBuku_JudulContainingIgnoreCaseOrKeteranganContainingIgnoreCase(
+            keyword, keyword, pageable
+        );
+    }
+
     public List<Maintenance> getMaintenanceByBukuId(Long bukuId) {
         return maintenanceRepository.findByBuku_BukuId(bukuId);
     }
@@ -101,5 +119,19 @@ public class MaintenanceService {
 
     public Optional<Maintenance> getMaintenanceById(Long id) {
         return maintenanceRepository.findById(id);
+    }
+
+    public long countByStatus(String status) {
+        try {
+            StatusMaintenance enumStatus = StatusMaintenance.valueOf(status.toUpperCase());
+            return maintenanceRepository.countByStatus(enumStatus);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid Maintenance Status: " + status + ". Error: " + e.getMessage());
+            return 0;
+        }
+    }
+
+    public long getTotalDalamMaintenance() {
+        return maintenanceRepository.countByStatus(StatusMaintenance.DALAM_PROSES);
     }
 }

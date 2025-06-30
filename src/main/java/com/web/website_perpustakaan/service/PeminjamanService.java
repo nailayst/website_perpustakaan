@@ -7,17 +7,23 @@ import com.web.website_perpustakaan.model.Denda;
 import com.web.website_perpustakaan.repository.PeminjamanRepository;
 import com.web.website_perpustakaan.repository.BukuRepository;
 import com.web.website_perpustakaan.repository.UserRepository;
+import com.web.website_perpustakaan.model.Peminjaman.StatusPeminjaman;
 
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class PeminjamanService {
@@ -33,6 +39,7 @@ public class PeminjamanService {
 
     @Autowired
     private DendaService dendaService;
+
 
     @Transactional
     public Peminjaman pinjamBuku(Long userId, Long bukuId) {
@@ -143,11 +150,70 @@ public class PeminjamanService {
 
     public long countByStatusPeminjaman(String status) {
         try {
-            Peminjaman.StatusPeminjaman enumStatus = Peminjaman.StatusPeminjaman.valueOf(status.toUpperCase());
+            StatusPeminjaman enumStatus = StatusPeminjaman.valueOf(status.toUpperCase());
             return peminjamanRepository.countByStatusPeminjaman(enumStatus);
         } catch (IllegalArgumentException e) {
             System.err.println("Invalid Peminjaman Status: " + status + ". Error: " + e.getMessage());
-            return 0; 
+            return 0;
         }
+    }
+
+    public List<Peminjaman> getBukuTerlambatSaatIni() {
+        return peminjamanRepository.findByStatusPeminjaman(StatusPeminjaman.TERLAMBAT);
+    }
+
+    public long getTotalBukuDipinjam() {
+        return peminjamanRepository.countByStatusPeminjaman(StatusPeminjaman.DIPINJAM);
+    }
+
+    public long getJumlahBukuTerlambat() {
+        return peminjamanRepository.countByStatusPeminjaman(StatusPeminjaman.TERLAMBAT);
+    }
+
+    public Map<String, Long> getPeminjamanTrendData(String period, int count) {
+        Map<String, Long> trendData = new LinkedHashMap<>();
+        LocalDate endDate = LocalDate.now();
+        DateTimeFormatter formatter;
+
+        if ("weekly".equalsIgnoreCase(period)) {
+            formatter = DateTimeFormatter.ofPattern("dd MMM"); 
+            for (int i = count - 1; i >= 0; i--) {
+                LocalDate weekStart = endDate.minusWeeks(i).with(java.time.DayOfWeek.MONDAY);
+                LocalDate weekEnd = weekStart.plusDays(6);
+                String label = weekStart.format(formatter) + "-" + weekEnd.format(formatter);
+                
+                long numPeminjaman = peminjamanRepository.findAll().stream()
+                    .filter(p -> p.getTanggalPeminjaman() != null &&
+                                     !p.getTanggalPeminjaman().isBefore(weekStart) &&
+                                     !p.getTanggalPeminjaman().isAfter(weekEnd))
+                    .count();
+                trendData.put(label, numPeminjaman);
+            }
+        } else { 
+            formatter = DateTimeFormatter.ofPattern("MMM yyyy"); 
+            for (int i = count - 1; i >= 0; i--) {
+                LocalDate monthStart = endDate.minusMonths(i).withDayOfMonth(1);
+                LocalDate monthEnd = monthStart.plusMonths(1).minusDays(1);
+                String label = monthStart.format(formatter);
+
+                long numPeminjaman = peminjamanRepository.findAll().stream()
+                    .filter(p -> p.getTanggalPeminjaman() != null &&
+                                     !p.getTanggalPeminjaman().isBefore(monthStart) &&
+                                     !p.getTanggalPeminjaman().isAfter(monthEnd))
+                    .count();
+                trendData.put(label, numPeminjaman);
+            }
+        }
+        return trendData;
+    }
+
+    public Page<Peminjaman> getAllPeminjamanPaginated(Pageable pageable) {
+        return peminjamanRepository.findAll(pageable);
+    }
+
+    public Page<Peminjaman> searchPeminjamanPaginated(String keyword, Pageable pageable) {
+        return peminjamanRepository.findByBuku_JudulContainingIgnoreCaseOrUser_UsernameContainingIgnoreCase(
+            keyword, keyword, pageable
+        );
     }
 }

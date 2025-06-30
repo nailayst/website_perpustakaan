@@ -58,6 +58,16 @@
                         <input type="text" name="keyword" class="form-control form-control-sm me-2" placeholder="Cari berdasarkan NIM/NIP, Nama, atau Email..." th:value="${keyword}">
                         <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Cari</button>
                         <a th:href="@{/admin/users}" class="btn btn-secondary btn-sm ms-2"><i class="fas fa-sync-alt"></i> Reset</a>
+                        
+                        <div class="d-flex align-items-center ms-auto">
+                            <label for="pageSizeSelect" class="form-label mb-0 me-2 small">Tampilkan:</label>
+                            <select id="pageSizeSelect" name="size" class="form-select form-select-sm" onchange="this.form.submit()" style="width: auto;">
+                                <option value="5" th:selected="${pageSize == 5}">5</option>
+                                <option value="10" th:selected="${pageSize == 10}">10</option>
+                                <option value="25" th:selected="${pageSize == 25}">25</option>
+                                <option value="50" th:selected="${pageSize == 50}">50</option>
+                            </select>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -71,17 +81,41 @@
                         <table class="table table-striped users-table">
                             <thead>
                                 <tr>
-                                    <th class="col-nim-nip">NIM / NIP</th>
-                                    <th class="col-nama">Nama Lengkap</th>
-                                    <th class="col-email">Email</th>
-                                    <th class="col-role">Role</th>
-                                    <th class="col-status">Status</th>
+                                    <th class="col-nim-nip">
+                                        <a th:href="@{/admin/users(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='username,' + (${sortField == 'username' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'username' ? 'text-primary' : 'text-dark'}">
+                                            NIM / NIP <i th:classappend="${sortField == 'username' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-nama">
+                                        <a th:href="@{/admin/users(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='profile.namaLengkap,' + (${sortField == 'profile.namaLengkap' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'profile.namaLengkap' ? 'text-primary' : 'text-dark'}">
+                                            Nama Lengkap <i th:classappend="${sortField == 'profile.namaLengkap' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-email">
+                                        <a th:href="@{/admin/users(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='email,' + (${sortField == 'email' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'email' ? 'text-primary' : 'text-dark'}">
+                                            Email <i th:classappend="${sortField == 'email' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-role">
+                                        <a th:href="@{/admin/users(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='levelUser.levelUser,' + (${sortField == 'levelUser.levelUser' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'levelUser.levelUser' ? 'text-primary' : 'text-dark'}">
+                                            Role <i th:classappend="${sortField == 'levelUser.levelUser' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
+                                    <th class="col-status">
+                                        <a th:href="@{/admin/users(page=${currentPage}, size=${pageSize}, keyword=${keyword}, sort='validasi.status,' + (${sortField == 'validasi.status' and sortDirection == 'asc' ? 'desc' : 'asc'}) )}"
+                                           th:classappend="${sortField == 'validasi.status' ? 'text-primary' : 'text-dark'}">
+                                            Status <i th:classappend="${sortField == 'validasi.status' ? (sortDirection == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                                        </a>
+                                    </th>
                                     <th class="col-aksi">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="user : ${users}">
-                                    <td class="col-nim-nip" th:text="${user.username}" th:title="${user.username}"></td>
+                                <tr th:each="user : ${userPage.content}"> <td class="col-nim-nip" th:text="${user.username}" th:title="${user.username}"></td>
                                     <td class="col-nama" th:text="${user.profile?.namaLengkap ?: '-'}"></td>
                                     <td class="col-email" th:text="${#strings.length(user.email) > 25 ? #strings.substring(user.email, 0, 22) + '...' : user.email}" th:title="${user.email}"></td>
                                     <td class="col-role" th:text="${user.levelUser?.levelUser ?: '-'}"></td>
@@ -98,11 +132,41 @@
                                         </form>
                                     </td>
                                 </tr>
-                                <tr th:if="${#lists.isEmpty(users)}">
-                                    <td colspan="6" class="text-center">Tidak ada pengguna yang ditemukan.</td>
+                                <tr th:if="${userPage.empty}"> <td colspan="6" class="text-center">Tidak ada pengguna yang ditemukan.</td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <div class="row align-items-center mt-3">
+                        <div class="col-md-6">
+                            <span class="text-muted" th:if="${userPage.totalElements > 0}">
+                                Menampilkan data ke 
+                                <span th:text="${userPage.number * userPage.size + 1}"></span>
+                                sampai 
+                                <span th:text="${userPage.number * userPage.size + userPage.numberOfElements}"></span>
+                                dari total <span th:text="${userPage.totalElements}"></span> Data.
+                            </span>
+                            <span class="text-muted" th:if="${userPage.totalElements == 0}">
+                                Tidak ada data yang ditemukan.
+                            </span>
+                        </div>
+                        <div class="col-md-6">
+                            <nav aria-label="Page navigation" th:if="${userPage.totalPages > 1}">
+                                <ul class="pagination justify-content-end mb-0">
+                                    <li class="page-item" th:classappend="${userPage.first ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/admin/users(page=${currentPage - 1}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}">Previous</a>
+                                    </li>
+                                    <li class="page-item" th:each="i : ${#numbers.sequence(0, userPage.totalPages - 1)}"
+                                        th:classappend="${i == currentPage ? 'active' : ''}">
+                                        <a class="page-link" th:href="@{/admin/users(page=${i}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}" th:text="${i + 1}"></a>
+                                    </li>
+                                    <li class="page-item" th:classappend="${userPage.last ? 'disabled' : ''}">
+                                        <a class="page-link" th:href="@{/admin/users(page=${currentPage + 1}, size=${pageSize}, keyword=${keyword}, sort=${sortField} + ',' + ${sortDirection})}">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -111,7 +175,7 @@
 
     <footer>
         <div class="container">
-            <p>© <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> KlikPustaka. All rights reserved.</p>
+            <p>&copy; <span th:text="${#dates.format(#dates.createNow(), 'yyyy')}"></span> KlikPustaka. All rights reserved.</p>
         </div>
     </footer>
 

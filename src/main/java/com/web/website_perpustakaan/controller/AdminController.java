@@ -6,7 +6,7 @@ import com.web.website_perpustakaan.model.User;
 import com.web.website_perpustakaan.repository.LevelUserRepository;
 import com.web.website_perpustakaan.repository.UserRepository;
 import com.web.website_perpustakaan.service.UserService;
-import com.web.website_perpustakaan.service.BukuService; // Jika ingin menampilkan total buku di admin dashboard
+import com.web.website_perpustakaan.service.BukuService; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +17,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 @Controller
 @RequestMapping("/admin")
@@ -31,6 +36,7 @@ public class AdminController {
     private LevelUserRepository levelUserRepository;
     @Autowired
     private BukuService bukuService; 
+
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -52,15 +58,37 @@ public class AdminController {
     }
 
     @GetMapping("/users")
-    public String listUsers(@RequestParam(value = "keyword", required = false) String keyword, Model model) {
-        List<User> users;
+    public String listUsers(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sort", defaultValue = "username,asc") String sort,
+            Model model) {
+
+
+        String[] sortParams = sort.split(",");
+        String sortBy = sortParams[0];
+        Sort.Direction sortDirection = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc") ? Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort sortOrder = Sort.by(sortDirection, sortBy);
+
+        Pageable pageable = PageRequest.of(page, size, sortOrder);
+        
+        Page<User> userPage;
         if (keyword != null && !keyword.trim().isEmpty()) {
-            users = userService.searchUsers(keyword); 
+            userPage = userService.searchUsersPaginated(keyword, pageable); 
             model.addAttribute("keyword", keyword); 
         } else {
-            users = userRepository.findAll();
+            userPage = userRepository.findAll(pageable); 
         }
-        model.addAttribute("users", users);
+
+        model.addAttribute("userPage", userPage);
+        model.addAttribute("currentPage", userPage.getNumber());
+        model.addAttribute("pageSize", userPage.getSize());
+        model.addAttribute("totalPages", userPage.getTotalPages());
+        model.addAttribute("totalElements", userPage.getTotalElements());
+        model.addAttribute("sortField", sortBy);
+        model.addAttribute("sortDirection", sortDirection.toString().toLowerCase());
+
         return "admin/users";
     }
 

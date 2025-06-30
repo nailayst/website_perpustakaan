@@ -15,6 +15,9 @@ import com.web.website_perpustakaan.repository.ProfileRepository;
 import java.util.List; 
 import java.util.UUID;
 
+import org.springframework.data.domain.Page; 
+import org.springframework.data.domain.Pageable;
+
 @Service
 public class UserService {
 
@@ -83,12 +86,12 @@ public class UserService {
         if (user.getLevelUser().getLevelUser().equals("member")) {
             String verificationLink = "http://localhost:8080/verify?token=" + token;
             String emailContent = "Kepada " + profile.getNamaLengkap() + ",\n\n" +
-                                  "Selamat datang di KlikPustaka!\n" +
-                                  "Untuk memverifikasi akun Anda, silakan klik link berikut:\n" +
-                                  verificationLink + "\n\n" +
-                                  "Jika Anda tidak mendaftar, abaikan email ini.\n" +
-                                  "Hubungi kami di support@klikpustaka.com jika ada pertanyaan.\n\n" +
-                                  "Salam,\nTim KlikPustaka";
+                                    "Selamat datang di KlikPustaka!\n" +
+                                    "Untuk memverifikasi akun Anda, silakan klik link berikut:\n" +
+                                    verificationLink + "\n\n" +
+                                    "Jika Anda tidak mendaftar, abaikan email ini.\n" +
+                                    "Hubungi kami di support@klikpustaka.com jika ada pertanyaan.\n\n" +
+                                    "Salam,\nTim KlikPustaka";
             emailService.sendEmail(user.getEmail(), "Verifikasi Akun KlikPustaka", emailContent);
         }
     }
@@ -133,6 +136,13 @@ public class UserService {
         String lowerCaseKeyword = keyword.toLowerCase();
         return userRepository.findByUsernameContainingIgnoreCaseOrProfile_NamaLengkapContainingIgnoreCaseOrEmailContainingIgnoreCase(
             lowerCaseKeyword, lowerCaseKeyword, lowerCaseKeyword
+        );
+    }
+
+    public Page<User> searchUsersPaginated(String keyword, Pageable pageable) {
+        String lowerCaseKeyword = keyword.toLowerCase();
+        return userRepository.findByUsernameContainingIgnoreCaseOrProfile_NamaLengkapContainingIgnoreCaseOrEmailContainingIgnoreCase(
+            lowerCaseKeyword, lowerCaseKeyword, lowerCaseKeyword, pageable
         );
     }
 }

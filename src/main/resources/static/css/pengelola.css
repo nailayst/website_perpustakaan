@@ -1,3 +1,4 @@
+/* --- GENERAL & LAYOUT --- */
 body {
     background-color: #e9eff5;
     font-family: 'Open Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -15,76 +16,77 @@ body {
 
 /* --- NAVBAR --- */
 .navbar {
-    background-color: #1a3c5e;
-    padding: 0.8rem 1.5rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    background-color: #1a3c5e; 
+    padding: 0.8rem 1.5rem; 
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15); 
     z-index: 1000;
 }
 .navbar-brand {
     font-weight: 700;
-    font-size: 1.6rem;
+    font-size: 1.6rem; 
     color: #ffffff !important;
     display: flex;
     align-items: center;
 }
 .navbar-brand .fas {
-    margin-right: 12px;
-    font-size: 1.4em;
+    margin-right: 12px; 
+    font-size: 1.4em; 
     color: #ffffff;
 }
 .navbar-nav .nav-link {
     color: #ffffff !important;
-    margin-left: 1.2rem;
-    padding: 0.5rem 1rem;
+    margin-left: 1.2rem; 
+    padding: 0.5rem 1rem; 
     border-radius: 4px;
     transition: background-color 0.2s ease, color 0.2s ease;
     font-weight: 500;
-    font-size: 1.0em;
+    font-size: 1.0em; 
 }
 .navbar-nav .nav-link:hover {
     background-color: rgba(255, 255, 255, 0.2);
     color: #ffffff !important;
 }
 
+
 /* --- SIDEBAR --- */
 .sidebar {
-    background-color: #1a3c5e;
+    background-color: #1a3c5e; 
     color: #fff;
-    width: 220px !important;
+    width: 220px !important; 
     flex-shrink: 0;
-    padding-top: 1.2rem;
-    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1);
+    padding-top: 1.2rem; 
+    box-shadow: 2px 0 6px rgba(0, 0, 0, 0.1); 
     min-height: 100vh;
     display: flex;
     flex-direction: column;
 }
 .sidebar-header {
-    padding: 0 1.2rem 1rem;
-    color: rgba(255, 255, 255, 0.7);
+    padding: 0 1.2rem 1rem; 
+    color: rgba(255, 255, 255, 0.7); 
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.9em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-    margin-bottom: 1rem;
+    font-size: 0.9em; 
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15); 
+    margin-bottom: 1rem; 
 }
 .sidebar-menu {
     flex-grow: 1;
 }
 .sidebar a {
-    padding: 0.7rem 1.2rem;
+    padding: 0.7rem 1.2rem; 
     display: flex;
     align-items: center;
     color: #ecf0f1;
     text-decoration: none;
     transition: background-color 0.2s ease, border-left 0.2s ease;
     border-left: 5px solid transparent;
-    font-size: 1.0em;
+    font-size: 1.0em; 
 }
 .sidebar a .fas, .sidebar a .far {
-    margin-right: 10px;
+    margin-right: 10px; 
     width: 20px;
     text-align: center;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.8); 
 }
 .sidebar a:hover, .sidebar a.active {
     background-color: #2a5a8e;
@@ -101,7 +103,7 @@ body {
 }
 .sidebar .dropdown-toggle::after {
     margin-left: auto;
-    border-top: 0.35em solid #ecf0f1;
+    border-top: 0.35em solid #ecf0f1; 
     border-right: 0.35em solid transparent;
     border-left: 0.35em solid transparent;
 }
@@ -121,10 +123,10 @@ body {
 }
 .sidebar .dropdown-item {
     color: #ecf0f1;
-    padding: 0.6rem 1.2rem 0.6rem 2.5rem;
-    transition: background-color 0.2s ease;
+    padding: 0.6rem 1.2rem 0.6rem 2.5rem; 
+    transition: background-color 0.2s ease, border-left 0.2s ease;
     border-left: 5px solid transparent;
-    font-size: 0.95em;
+    font-size: 0.95em; 
 }
 .sidebar .dropdown-item:hover, .sidebar .dropdown-item.active {
     background-color: #3a6aa6;
@@ -133,27 +135,27 @@ body {
 
 /* --- MAIN CONTENT AREA --- */
 .main-content {
-    padding: 1.5rem;
+    padding: 1.5rem; 
     flex-grow: 1;
     background-color: #eef5f9;
 }
 
 .card {
     border: none;
-    box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.1);
-    border-radius: 0.6rem;
-    margin-bottom: 1.8rem;
+    box-shadow: 0 0.2rem 0.6rem rgba(0, 0, 0, 0.1); 
+    border-radius: 0.6rem; 
+    margin-bottom: 1.8rem; 
     background-color: #ffffff;
-    overflow: hidden;
+    overflow: hidden; 
 }
 .card-header {
     background-color: #f8fbfd;
-    padding: 1rem 1.5rem;
+    padding: 1rem 1.5rem; 
     border-bottom: 1px solid #e0e6ec;
-    border-radius: 0.6rem 0.6rem 0 0;
+    border-radius: 0.6rem 0.6rem 0 0; 
     font-weight: 600;
     color: #495d75;
-    font-size: 1.1rem;
+    font-size: 1.1rem; 
 }
 .card-body {
     padding: 1rem; 
@@ -175,34 +177,37 @@ body {
 .form-label {
     font-weight: 500;
     color: #555;
-    margin-bottom: 0.4rem;
-    font-size: 1.0em;
+    margin-bottom: 0.4rem; 
+    font-size: 1.0em; 
 }
 .form-control, .form-select {
     border-radius: 0.3rem;
     border: 1px solid #c8d3db;
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
-    padding: 0.5rem 0.8rem;
-    font-size: 1.0em;
+    padding: 0.5rem 0.8rem; 
+    font-size: 1.0em; 
 }
 .form-control:focus, .form-select:focus {
     border-color: #1a3c5e;
-    box-shadow: 0 0 0 0.2rem rgba(26, 60, 94, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(26, 60, 94, 0.25); 
+}
+#pageSizeSelect {
+    width: 90px !important; 
 }
 
 /* --- BUTTONS --- */
 .btn {
     border-radius: 0.3rem;
     font-weight: 500;
-    padding: 0.5rem 1.2rem;
+    padding: 0.5rem 1.2rem; 
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.0em;
+    font-size: 1.0em; 
 }
 .btn .fas, .btn .far {
-    margin-right: 6px;
+    margin-right: 6px; 
 }
 .btn-primary {
     background-color: #1a3c5e;
@@ -211,6 +216,39 @@ body {
 .btn-primary:hover {
     background-color: #2a5a8e;
     border-color: #2a5a8e;
+}
+.btn-secondary {
+    background-color: #7f8c8d;
+    border-color: #7f8c8d;
+}
+.btn-secondary:hover {
+    background-color: #6c7a7d;
+    border-color: #6c7a7d;
+}
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+.btn-warning {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    color: #212529;
+}
+.btn-warning:hover {
+    background-color: #e0a800;
+    border-color: #d39e00;
 }
 .btn-info {
     background-color: #1a3c5e;
@@ -222,25 +260,34 @@ body {
     border-color: #2a5a8e;
     color: #ffffff;
 }
+.btn-outline-primary {
+    color: #1a3c5e;
+    border-color: #1a3c5e;
+}
+.btn-outline-primary:hover {
+    background-color: #1a3c5e;
+    color: #fff;
+}
 .btn-sm {
-    padding: 0.3rem 0.7rem;
-    font-size: 0.9em;
+    padding: 0.3rem 0.7rem; 
+    font-size: 0.9em; 
 }
 .btn-lg {
-    padding: 0.9rem 1.8rem;
-    font-size: 1.2rem;
+    padding: 0.9rem 1.8rem; 
+    font-size: 1.2rem; 
 }
+
 
 /* --- ALERTS --- */
 .alert {
-    border-radius: 0.4rem;
-    margin-bottom: 1.8rem;
-    font-size: 1.0em;
-    padding: 1rem 1.5rem;
+    border-radius: 0.4rem; 
+    margin-bottom: 1.8rem; 
+    font-size: 1.0em; 
+    padding: 1rem 1.5rem; 
 }
 .text-danger {
-    font-size: 0.9em;
-    margin-top: 0.3rem;
+    font-size: 0.9em; 
+    margin-top: 0.3rem; 
 }
 
 /* --- FOOTER --- */
@@ -248,25 +295,24 @@ footer {
     background-color: #1a3c5e;
     color: #ffffff;
     text-align: center;
-    padding: 1.5rem 0;
-    margin-top: 1.8rem;
+    padding: 1.5rem 0; 
+    margin-top: 1.8rem; 
 }
 footer p {
     margin-bottom: 0;
-    font-size: 1.0em;
+    font-size: 1.0em; 
 }
 
 /* --- TABLE STYLES --- */
 .table-responsive {
-    overflow-x: auto;
-    margin-bottom: 1rem;
+    overflow-x: hidden; 
+    margin-bottom: 1rem; 
     border: 1px solid #d9e2ea;
-    border-radius: 0.4rem;
-    padding: 0.3rem;
+    border-radius: 0.4rem; 
+    padding: 0.3rem; 
 }
 .table {
-    table-layout: fixed;
-    width: 100%;
+    table-layout: fixed; 
     margin-bottom: 0;
     border-collapse: collapse;
     border-spacing: 0;
@@ -277,11 +323,18 @@ footer p {
     font-weight: 600;
     color: #5f7a94;
     text-align: left;
-    padding: 0.7rem 1rem;
-    font-size: 1.0em;
+    padding: 0.7rem 1rem; 
+    font-size: 1.0em; 
+}
+.table thead th a {
+    text-decoration: none; 
+    color: #5f7a94; 
+}
+.table thead th a:hover {
+    text-decoration: underline; 
 }
 .table tbody tr {
-    line-height: 1.5;
+    line-height: 1.5; 
 }
 .table tbody tr:nth-of-type(odd) {
     background-color: #ffffff;
@@ -294,153 +347,90 @@ footer p {
 }
 .table th, .table td {
     vertical-align: middle;
-    padding: 0.7rem 1rem;
-    font-size: 1.0em;
+    padding: 0.7rem 1rem; 
+    font-size: 1.0em; 
     border-top: 1px solid #e9eff5;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: ellipsis; 
 }
 .table td.col-aksi {
-    white-space: normal;
+    white-space: normal; 
     overflow: visible;
     text-overflow: clip;
-    padding: 0.4rem 0.6rem;
+    padding: 0.4rem 0.6rem; 
     display: flex;
     align-items: center;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 4px;
+    gap: 4px; 
 }
 .table td.col-aksi .btn-sm {
     margin: 0;
     flex-shrink: 0;
-    font-size: 0.9em;
+    font-size: 0.9em; 
 }
 .table th.col-aksi {
     white-space: nowrap;
     padding: 0.7rem 1rem;
     font-size: 1.0em;
 }
-.table td.col-nama {
-    font-size: 0.95em; 
-}
-.table td.col-tanggal {
-    font-size: 1.0em;
-    color: #333;
-    font-weight: 500;
-}
-.table td.col-judul {
-    max-width: 0;
-}
-.table td.col-keterangan {
-    max-width: 0;
-}
-.table td.col-status {
-    white-space: normal; 
-    overflow: visible;
-    text-overflow: clip;
-    max-width: none; 
-}
+
+/* Users Table Specific Widths (pengelola/users.html) */
+.table.users-table { min-width: 810px; } 
+.table.users-table th.col-nim-nip { width: 140px; }
+.table.users-table th.col-nama { width: 220px; }
+.table.users-table th.col-email { width: 250px; }
+.table.users-table th.col-role { width: 100px; }
+.table.users-table th.col-status { width: 100px; }
+
+/* Pengusulan Table Specific Widths (pengelola/pengusulan.html) */
+.table.pengusulan-table { min-width: 890px; } 
+.table.pengusulan-table th.col-id { width: 80px; }
+.table.pengusulan-table th.col-judul { width: 200px; }
+.table.pengusulan-table th.col-pengusul { width: 150px; }
+.table.pengusulan-table th.col-tanggal { width: 140px; }
+.table.pengusulan-table th.col-status { width: 160px; }
+.table.pengusulan-table th.col-aksi { width: 140px; } 
+
+/* Maintenance Table Specific Widths (pengelola/maintenance.html) */
+.table.maintenance-table { min-width: 640px; }
+.table.maintenance-table th.col-id { width: 80px; }
+.table.maintenance-table th.col-judul { width: 140px; }
+.table.maintenance-table th.col-jenis { width: 100px; } 
+.table.maintenance-table th.col-tanggal { width: 120px; }
+.table.maintenance-table th.col-status { width: 120px; }
+.table.maintenance-table th.col-aksi { width: 90px; } 
+
+/* Peminjaman Table Specific Widths (pengelola/peminjaman.html) */
+.table.peminjaman-table { min-width: 890px; } 
+.table.peminjaman-table th.col-nama { width: 180px; }
+.table.peminjaman-table th.col-judul { width: 230px; }
+.table.peminjaman-table th.col-tanggal { width: 120px; } 
+.table.peminjaman-table th.col-status { width: 120px; }
+.table.peminjaman-table th.col-denda { width: 120px; }
+
+/* --- BADGES (Custom Colors) --- */
 .badge {
-    border-radius: 0.25rem;
-    font-size: 0.85em;
-    padding: 0.3em 0.6em;
+    border-radius: 0.25rem; 
+    font-size: 0.85em; 
+    padding: 0.3em 0.6em; 
     min-width: 75px; 
     text-align: center;
-    line-height: 1.4;
+    line-height: 1;
 }
+.badge.bg-success { background-color: #28a745 !important; }
+.badge.bg-danger { background-color: #dc3545 !important; }
+.badge.bg-warning { background-color: #ffc107 !important; color: #212529 !important; }
+.badge.bg-info { background-color: #1a3c5e !important; color: #ffffff !important;}
+.badge.bg-secondary { background-color: #6c757d !important; }
+
+/* Badge untuk status Pengusulan */
+.badge.status-badge-menunggu { background-color: #fcf8e3; color: #8a6d3b; border: 1px solid #faebcc; }
+.badge.status-badge-diterima { background-color: #28a745; color: white; }
+.badge.status-badge-ditolak { background-color: #dc3545; color: white; }
+
+/* Badge untuk status Maintenance */
 .badge.status-dalam-proses { background-color: #1a3c5e !important; color: white; }
 .badge.status-selesai { background-color: #28a745 !important; color: white; }
 .badge.status-ditarik-permanen { background-color: #6c757d !important; color: white; }
-.status-badge-menunggu { background-color: #fcf8e3; color: #8a6d3b; border: 1px solid #faebcc; }
-.status-badge-diterima { background-color: #28a745; color: white; }
-.status-badge-ditolak { background-color: #dc3545; color: white; }
-
-/* --- DASHBOARD PENGELOLA --- */
-.dashboard-info-cards {
-    display: flex;
-    flex-wrap: nowrap; 
-    gap: 1rem; 
-    justify-content: space-between;
-    margin: 0 auto;
-    max-width: 100%;
-    width: 100%;
-    padding: 0 0.5rem; 
-}
-.dashboard-info-cards .card {
-    flex: 1 1 calc(33.33% - 0.67rem); 
-    min-width: 180px; 
-    margin-bottom: 0;
-    max-width: 100%;
-    box-sizing: border-box;
-}
-.dashboard-info-cards .card-body {
-    padding: 0.8rem; 
-    background-color: #fff;
-    text-align: center;
-    word-break: break-word;
-}
-.dashboard-info-cards .card-title {
-    font-size: 1.0rem; 
-    margin-bottom: 0.4rem; 
-    color: #495d75;
-}
-.dashboard-info-cards .card-title .fas {
-    font-size: 1.0em; 
-    margin-right: 6px; 
-}
-.dashboard-info-cards .card-text {
-    font-size: 1.5rem; 
-    font-weight: 500;
-    line-height: 1.2; 
-    margin-bottom: 0;
-    color: #1a3c5e;
-    word-break: break-all;
-}
-
-.fitur-cepat-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.8rem;
-    justify-content: space-between;
-    padding: 1.5rem;
-    margin: 0 auto;
-    max-width: 100%;
-    background-color: #fff;
-    border-radius: 0.6rem;
-}
-.fitur-cepat-buttons a {
-    flex: 1 1 calc(25% - 1.35rem); 
-    text-align: center;
-    padding: 0.9rem 1.5rem;
-    font-size: 1.0em;
-    min-width: 200px;
-    box-sizing: border-box;
-}
-@media (max-width: 991px) {
-    .fitur-cepat-buttons a {
-        flex-basis: calc(50% - 0.9rem); 
-    }
-}
-@media (max-width: 767px) {
-    .fitur-cepat-buttons a {
-        flex-basis: 100%; 
-    }
-    .dashboard-info-cards {
-        flex-wrap: wrap; 
-    }
-    .dashboard-info-cards .card {
-        flex-basis: 100%; 
-    }
-}
-
-.table.maintenance-table th.col-id { width: 60px; }
-.table.maintenance-table th.col-judul { width: 180px; }
-.table.maintenance-table th.col-jenis { width: 120px; }
-.table.maintenance-table th.col-keterangan { width: 220px; }
-.table.maintenance-table th.col-tanggal { width: 120px; }
-.table.maintenance-table th.col-status { width: 150px; }
-.table.maintenance-table th.col-aksi { width: 100px; }
-.table.maintenance-table th.col-nama { width: 150px; }
-.table.maintenance-table th.col-denda { width: 100px; }

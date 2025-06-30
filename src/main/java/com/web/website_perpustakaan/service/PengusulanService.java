@@ -9,6 +9,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page; 
+import org.springframework.data.domain.Pageable; 
+
 
 @Service
 public class PengusulanService {
@@ -41,6 +44,16 @@ public class PengusulanService {
 
     public List<Pengusulan> getAllPengusulanBuku() {
         return pengusulanRepository.findAll();
+    }
+
+    public Page<Pengusulan> getAllPengusulanPaginated(Pageable pageable) {
+        return pengusulanRepository.findAll(pageable);
+    }
+
+    public Page<Pengusulan> searchPengusulanPaginated(String keyword, Pageable pageable) {
+        return pengusulanRepository.findByJudulBukuContainingIgnoreCaseOrUser_UsernameContainingIgnoreCase(
+            keyword, keyword, pageable
+        );
     }
 
     public List<Pengusulan> getPengusulanBukuByStatus(Pengusulan.StatusPengusulan status) {
@@ -77,7 +90,7 @@ public class PengusulanService {
             return pengusulanRepository.countByStatusPengusulan(enumStatus);
         } catch (IllegalArgumentException e) {
             System.err.println("Invalid Pengusulan Status: " + status + ". Error: " + e.getMessage());
-            return 0; 
+            return 0;
         }
     }
 }
