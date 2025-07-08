@@ -37,7 +37,16 @@
             <div class="sidebar-menu">
                 <a th:href="@{/pengelola/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a th:href="@{/pengelola/users}"><i class="fas fa-users"></i> Daftar User</a>
-                <a th:href="@{/pengelola/tambah-buku}"><i class="fas fa-book-medical"></i> Tambah Buku</a>
+                <div class="dropdown">
+                    <a class="dropdown-toggle" href="#" role="button" id="bukuManagementDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-book"></i> Kelola Buku
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="bukuManagementDropdown">
+                        <li><a class="dropdown-item active" th:href="@{/pengelola/tambah-buku}">Tambah Buku</a></li>
+                        <li><a class="dropdown-item" th:href="@{/pengelola/daftar-buku}">Daftar Buku</a></li>
+                        <li><a class="dropdown-item" th:href="@{/pengelola/pengusulan}">Pengusulan</a></li>
+                    </ul>
+                </div>
                 <a th:href="@{/pengelola/peminjaman}"><i class="fas fa-handshake"></i> Peminjaman</a>
                 <div class="dropdown">
                     <a class="dropdown-toggle active" href="#" role="button" id="maintenanceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -49,16 +58,17 @@
                     </ul>
                 </div>
                 <a th:href="@{/pengelola/pengusulan}"><i class="fas fa-clipboard-list"></i> Pengusulan</a>
+                <a th:href="@{/pengelola/profile}"><i class="fas fa-user-circle me-2"></i> Profile</a>
             </div>
         </div>
         <div class="main-content">
             <h2 class="card-title"><i class="fas fa-edit me-2"></i> Edit Maintenance & Buku</h2>
 
+            <div th:if="${error}" class="alert alert-danger" role="alert">
+                <span th:text="${error}"></span>
+            </div>
             <div th:if="${success}" class="alert alert-success" role="alert">
                 <span th:text="${success}"></span>
-            </div>
-            <div th:if="${error}" class="alert alert-danger" role="alert">
-                <span th:text="${message}"></span>
             </div>
 
             <div class="card mb-4">
@@ -92,7 +102,7 @@
                     <form th:action="@{/pengelola/maintenance/edit-buku}" th:object="${buku}" method="post" enctype="multipart/form-data">
                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <input type="hidden" name="maintenanceId" th:value="${maintenance.maintenanceId}">
-                        <input type="hidden" name="bukuId" th:value="${buku.bukuId}">
+                        <input type="hidden" name="bukuId" th:value="*{bukuId}"> <input type="hidden" name="kodeBuku" th:value="*{kodeBuku}">
 
                         <div class="mb-3">
                             <label for="keteranganSelesai" class="form-label">Keterangan Penyelesaian Maintenance (Opsional)</label>
@@ -103,24 +113,23 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="judul" class="form-label">Judul Buku</label>
-                                <input type="text" class="form-control" id="judul" name="judul" th:field="*{judul}" required>
+                                <input type="text" class="form-control" id="judul" th:field="*{judul}" required>
                                 <div th:if="${#fields.hasErrors('judul')}" th:errors="*{judul}" class="text-danger"></div>
                             </div>
                             <div class="col-md-6">
                                 <label for="penulis" class="form-label">Penulis</label>
-                                <input type="text" class="form-control" id="penulis" name="penulis" th:field="*{penulis}" required>
+                                <input type="text" class="form-control" id="penulis" th:field="*{penulis}" required>
                                 <div th:if="${#fields.hasErrors('penulis')}" th:errors="*{penulis}" class="text-danger"></div>
                             </div>
                             <div class="col-md-6">
                                 <label for="penerbit" class="form-label">Penerbit</label>
-                                <input type="text" class="form-control" id="penerbit" name="penerbit" th:field="*{penerbit}">
+                                <input type="text" class="form-control" id="penerbit" th:field="*{penerbit}">
                                 <div th:if="${#fields.hasErrors('penerbit')}" th:errors="*{penerbit}" class="text-danger"></div>
                             </div>
                             <div class="col-md-6">
                                 <label for="kategori" class="form-label">Kategori</label>
-                                <select class="form-select" id="kategori" name="kategori" th:field="*{kategori}" required>
-                                    <option value="" disabled>Pilih Kategori</option>
-                                    <option value="Fiksi">Fiksi</option>
+                                <select class="form-select" id="kategori" th:field="*{kategori}" required>
+                                    <option value="" disabled selected>Pilih Kategori</option> <option value="Fiksi">Fiksi</option>
                                     <option value="Nonfiksi">Self-Improvement</option>
                                     <option value="Sains">Sains</option>
                                     <option value="Teknologi">Teknologi</option>
@@ -130,38 +139,60 @@
                             </div>
                             <div class="col-md-6">
                                 <label for="isbn" class="form-label">ISBN</label>
-                                <input type="text" class="form-control" id="isbn" name="isbn" th:field="*{isbn}">
+                                <input type="text" class="form-control" id="isbn" th:field="*{isbn}">
                                 <div th:if="${#fields.hasErrors('isbn')}" th:errors="*{isbn}" class="text-danger"></div>
                             </div>
                             <div class="col-md-6">
                                 <label for="stok" class="form-label">Stok</label>
-                                <input type="number" class="form-control" id="stok" name="stok" th:field="*{stok}" min="0" required>
+                                <input type="number" class="form-control" id="stok" th:field="*{stok}" min="0" required>
                                 <div th:if="${#fields.hasErrors('stok')}" th:errors="*{stok}" class="text-danger"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="statusBuku" class="form-label">Status Buku</label>
+                                <select class="form-select" id="statusBuku" th:field="*{statusBuku}" required>
+                                    <option th:each="statusOpt : ${StatusBukuEnum}"
+                                            th:value="${statusOpt}"
+                                            th:text="${statusOpt.name().replace('_', ' ')}"
+                                            th:selected="${buku.statusBuku != null and buku.statusBuku.name().equals(statusOpt.name())}"></option>
+                                </select>
+                                <div th:if="${#fields.hasErrors('statusBuku')}" th:errors="*{statusBuku}" class="text-danger"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="kondisi" class="form-label">Kondisi Buku</label>
+                                <select class="form-select" id="kondisi" th:field="*{kondisi}" required>
+                                    <option th:each="kondisiOpt : ${KondisiBukuEnum}"
+                                            th:value="${kondisiOpt}"
+                                            th:text="${kondisiOpt.name().replace('_', ' ')}"
+                                            th:selected="${buku.kondisi != null and buku.kondisi.name().equals(kondisiOpt.name())}"></option>
+                                </select>
+                                <div th:if="${#fields.hasErrors('kondisi')}" th:errors="*{kondisi}" class="text-danger"></div>
                             </div>
                             <div class="col-md-12">
                                 <label class="form-label">Tanggal Terbit</label>
                                 <div class="row g-2">
                                     <div class="col-md-6">
                                         <select name="bulanTerbit" class="form-select" required>
-                                            <option value="" disabled>Bulan</option>
-                                            <option th:each="bulan : ${bulanTerbitList}"
+                                            <option value="" disabled selected>Pilih Bulan</option> <option th:each="bulan : ${bulanTerbitList}"
                                                     th:value="${bulan}"
                                                     th:text="${bulan < 10 ? '0' + bulan : bulan}"
                                                     th:selected="${buku.tanggalTerbit != null and buku.tanggalTerbit.monthValue == bulan}">
                                             </option>
                                         </select>
-                                        <div id="bulanTerbitError" class="text-danger"></div>
+                                        <div th:if="${#fields.hasErrors('tanggalTerbit')}" class="text-danger">
+                                            <span th:errors="*{tanggalTerbit}"></span>
+                                        </div>
                                     </div>
                                     <div class="col-md-6">
                                         <select id="tahunTerbit" name="tahunTerbit" class="form-select" required>
-                                            <option value="" disabled>Tahun</option>
-                                            <option th:each="tahun : ${tahunTerbitList}"
+                                            <option value="" disabled selected>Pilih Tahun</option> <option th:each="tahun : ${tahunTerbitList}"
                                                     th:value="${tahun}"
                                                     th:text="${tahun}"
                                                     th:selected="${buku.tanggalTerbit != null and buku.tanggalTerbit.year == tahun}">
                                             </option>
                                         </select>
-                                        <div id="tahunTerbitError" class="text-danger"></div>
+                                        <div th:if="${#fields.hasErrors('tanggalTerbit')}" class="text-danger">
+                                            <span th:errors="*{tanggalTerbit}"></span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

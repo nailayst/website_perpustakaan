@@ -59,7 +59,7 @@
                                 <p><strong>Penerbit:</strong> <span>[[${buku.penerbit} ?: 'Tidak Tersedia']]</span></p>
                                 <p><strong>ISBN:</strong> <span>[[${buku.isbn} ?: 'Tidak Tersedia']]</span></p>
                                 <p><strong>Kategori:</strong> <span>[[${buku.kategori} ?: 'Tidak Tersedia']]</span></p>
-                                <p><strong>Tanggal Terbit:</strong> <span>[[${buku.tanggalTerbit != null ? #temporals.format(buku.tanggalTerbit, 'dd MMMM', new java.util.Locale('id', 'ID')) : 'Tidak Tersedia'}]]</span></p>
+                                <p><strong>Tanggal Terbit:</strong> <span>[[${buku.tanggalTerbit != null ? #temporals.format(buku.tanggalTerbit, 'MMMM yyyy', new java.util.Locale('id', 'ID')) : 'Tidak Tersedia'}]]</span></p>
                                 <p><strong>Stok:</strong> <span>[[${buku.stok} ?: '0']]</span></p>
                             </div>
 

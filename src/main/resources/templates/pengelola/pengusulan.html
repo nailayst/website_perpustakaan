@@ -37,7 +37,15 @@
             <div class="sidebar-menu">
                 <a th:href="@{/pengelola/dashboard}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
                 <a th:href="@{/pengelola/users}"><i class="fas fa-users"></i> Daftar User</a>
-                <a th:href="@{/pengelola/tambah-buku}"><i class="fas fa-book-medical"></i> Tambah Buku</a>
+                <div class="dropdown"> <a class="dropdown-toggle active" href="#" role="button" id="bukuManagementDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-book"></i> Kelola Buku
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="bukuManagementDropdown">
+                        <li><a class="dropdown-item" th:href="@{/pengelola/tambah-buku}">Tambah Buku</a></li>
+                        <li><a class="dropdown-item active" th:href="@{/pengelola/daftar-buku}">Daftar Buku</a></li>
+                        <li><a class="dropdown-item" th:href="@{/pengelola/pengusulan}">Pengusulan</a></li>
+                    </ul>
+                </div>
                 <a th:href="@{/pengelola/peminjaman}"><i class="fas fa-handshake"></i>Peminjaman</a>
                 <div class="dropdown">
                     <a class="dropdown-toggle" href="#" role="button" id="maintenanceDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -48,7 +56,7 @@
                         <li><a class="dropdown-item" th:href="@{/pengelola/maintenance/tambah}">Buat Maintenance</a></li>
                     </ul>
                 </div>
-                <a th:href="@{/pengelola/pengusulan}" class="active"><i class="fas fa-clipboard-list"></i>Pengusulan</a>
+                <a th:href="@{/pengelola/profile}" class="active"><i class="fas fa-user-circle me-2"></i> Profile</a>
             </div>
         </div>
         <div class="main-content">

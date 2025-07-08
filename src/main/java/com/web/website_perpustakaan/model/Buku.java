@@ -1,8 +1,10 @@
 package com.web.website_perpustakaan.model;
 
+import java.time.YearMonth;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import java.time.YearMonth;
+
 
 @Entity
 public class Buku {
@@ -14,6 +16,11 @@ public class Buku {
     @NotBlank(message = "Judul tidak boleh kosong")
     @Size(max = 255, message = "Judul maksimal 255 karakter")
     private String judul;
+
+    @NotBlank(message = "Kode buku tidak boleh kosong")
+    @Size(max = 50, message = "Kode buku maksimal 50 karakter")
+    @Column(name = "kode_buku", unique = true) 
+    private String kodeBuku; 
 
     @Size(max = 13, message = "ISBN maksimal 13 karakter")
     private String isbn;
@@ -57,10 +64,13 @@ public class Buku {
         BAIK, RUSAK_RINGAN, RUSAK_BERAT
     }
 
+    // --- Getters and Setters ---
     public Long getBukuId() { return bukuId; }
     public void setBukuId(Long bukuId) { this.bukuId = bukuId; }
     public String getJudul() { return judul; }
     public void setJudul(String judul) { this.judul = judul; }
+    public String getKodeBuku() { return kodeBuku; }
+    public void setKodeBuku(String kodeBuku) { this.kodeBuku = kodeBuku; }
     public String getIsbn() { return isbn; }
     public void setIsbn(String isbn) { this.isbn = isbn; }
     public String getPenulis() { return penulis; }

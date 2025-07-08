@@ -42,37 +42,33 @@
             <h2 class="mb-4" style="color: #1a3c5e;">Koleksi Buku</h2>
             <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
             <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
-            <div class="search-container">
-                <form th:action="@{/member/koleksi-buku}" method="get" class="search-form d-flex">
+            <div class="search-container mb-4"> <form th:action="@{/member/koleksi-buku}" method="get" class="search-form d-flex">
                     <input class="form-control me-2" type="search" placeholder="Cari judul, penulis, ISBN..." aria-label="Search" name="keyword" th:value="${keyword}">
                     <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Cari</button>
                 </form>
             </div>
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
-                        <h5 class="card-title">
-                            Daftar Buku
+                    <div class="card mb-4"> <h5 class="card-header"> Daftar Buku
                             <span th:if="${keyword != null and !keyword.empty}">(Hasil Pencarian untuk: '<span th:text="${keyword}"></span>')<span>
                         </h5>
-                        <div th:if="${daftarBuku == null or daftarBuku.empty}">
-                            <p class="card-text">Tidak ada buku tersedia atau ditemukan.</p>
-                        </div>
-                        <div th:unless="${daftarBuku == null or daftarBuku.empty}">
-                            <div th:each="buku : ${daftarBuku}" class="book-card">
-                                <div>
-                                    <img th:src="${buku.coverPath != null ? buku.coverPath : '/images/default-cover.jpg'}"
-                                         class="book-cover"
-                                         alt="Cover Buku"
-                                         onerror="this.src='/images/default-cover.jpg'">
-                                </div>
-                                <div class="book-info">
-                                    <h6 th:text="${buku.judul} ?: 'Judul Tidak Tersedia'" class="mb-1"></h6>
-                                    <p class="mb-0"><strong>Penulis:</strong> <span th:text="${buku.penulis} ?: 'Tidak Tersedia'"></span></p>
-                                    <p class="mb-0"><strong>Penerbit:</strong> <span th:text="${buku.penerbit} ?: 'Tidak Tersedia'"></span></p>
-                                    <p class="mb-0"><strong>Stok:</strong> <span th:text="${buku.stok} ?: '0'"></span></p><br>
-                                    <a th:if="${buku.bukuId != null}" th:href="@{/member/buku/{id}(id=${buku.bukuId})}" class="btn btn-primary btn-sm">Baca Selengkapnya</a>
-                                    <span th:unless="${buku.bukuId != null}" class="text-danger">ID Buku Tidak Valid</span>
+                        <div class="card-body"> <div th:if="${daftarBuku == null or daftarBuku.empty}">
+                                <p class="card-text">Tidak ada buku tersedia atau ditemukan.</p>
+                            </div>
+                            <div th:unless="${daftarBuku == null or daftarBuku.empty}" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                                <div class="col" th:each="buku : ${daftarBuku}">
+                                    <div class="card h-100 book-card-grid"> <img th:src="${buku.coverPath != null ? buku.coverPath : '/images/default-cover.jpg'}"
+                                             class="card-img-top book-cover-grid"
+                                             alt="Cover Buku"
+                                             onerror="this.src='/images/default-cover.jpg'">
+                                        <div class="card-body d-flex flex-column"> <h5 class="card-title mb-1 text-truncate" th:text="${buku.judul} ?: 'Judul Tidak Tersedia'"></h5> <p class="card-text mb-0"><small class="text-muted"><strong>Penulis:</strong> <span th:text="${buku.penulis} ?: 'Tidak Tersedia'"></span></small></p>
+                                            <p class="card-text mb-0"><small class="text-muted"><strong>Penerbit:</strong> <span th:text="${buku.penerbit} ?: 'Tidak Tersedia'"></span></small></p>
+                                            <p class="card-text mb-2"><small class="text-muted"><strong>Stok:</strong> <span th:text="${buku.stok} ?: '0'"></span></small></p>
+                                            <div class="mt-auto"> <a th:if="${buku.bukuId != null}" th:href="@{/member/buku/{id}(id=${buku.bukuId})}" class="btn btn-primary btn-sm w-100">Baca Selengkapnya</a>
+                                                <span th:unless="${buku.bukuId != null}" class="text-danger d-block text-center">ID Buku Tidak Valid</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -426,9 +426,9 @@ footer p {
 .badge.bg-secondary { background-color: #6c757d !important; }
 
 /* Badge untuk status Pengusulan */
-.badge.status-badge-menunggu { background-color: #fcf8e3; color: #8a6d3b; border: 1px solid #faebcc; }
-.badge.status-badge-diterima { background-color: #28a745; color: white; }
-.badge.status-badge-ditolak { background-color: #dc3545; color: white; }
+.pengusulan-table .badge.status-badge-menunggu { background-color: #fcf8e3 !important; color: #8a6d3b !important; border: 1px solid #faebcc !important; }
+.pengusulan-table .badge.status-badge-diterima { background-color: #28a745 !important; color: white !important; }
+.pengusulan-table .badge.status-ditolak { background-color: #dc3545 !important; color: white !important; }
 
 /* Badge untuk status Maintenance */
 .badge.status-dalam-proses { background-color: #1a3c5e !important; color: white; }

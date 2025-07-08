@@ -19,6 +19,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;     
+import org.springframework.data.domain.Pageable; 
+import jakarta.transaction.Transactional; 
+
 @Service
 public class BukuService {
 
@@ -38,111 +42,108 @@ public class BukuService {
         }
     }
 
+    @Transactional
     public void tambahBuku(@Valid Buku buku, MultipartFile coverFile, MultipartFile pdfFile) throws IOException {
+        // Validasi kode buku unik
+        if (bukuRepository.existsByKodeBuku(buku.getKodeBuku())) {
+            throw new IllegalArgumentException("Kode buku '" + buku.getKodeBuku() + "' sudah ada. Harap gunakan kode unik lain.");
+        }
+
         buku.setStatusBuku(StatusBuku.TERSEDIA);
         buku.setKondisi(KondisiBuku.BAIK);
 
-        Buku savedBuku = bukuRepository.save(buku);
-        Long bukuId = savedBuku.getBukuId();
+        Buku savedBuku = bukuRepository.save(buku); // Simpan dulu untuk mendapatkan ID
 
-        if (coverFile != null && !coverFile.isEmpty()) {
-            String contentType = coverFile.getContentType();
-            if (contentType == null || (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType))) {
-                throw new IllegalArgumentException("File cover harus JPG atau PNG.");
-            }
-            if (coverFile.getSize() > 10 * 1024 * 1024) {
-                throw new IllegalArgumentException("Ukuran file cover maksimal 10MB.");
-            }
+        // Penanganan file hanya jika buku berhasil disimpan
+        String coverPath = handleFileUpload(coverFile, savedBuku.getBukuId(), COVER_DIR, "cover", "image");
+        if (coverPath != null) savedBuku.setCoverPath(coverPath);
 
-            String extension = "image/jpeg".equals(contentType) ? "jpg" : "png";
-            String fileName = bukuId + "_cover." + extension;
-            Path uploadPath = COVER_DIR.resolve(fileName);
-            Files.copy(coverFile.getInputStream(), uploadPath, StandardCopyOption.REPLACE_EXISTING);
-            savedBuku.setCoverPath("/upload/images/" + fileName);
-        }
+        // PERBAIKAN DI SINI: expectedContentTypePrefix untuk PDF menjadi "application"
+        String pdfPath = handleFileUpload(pdfFile, savedBuku.getBukuId(), PDF_DIR, "file", "application"); // <--- INI PERUBAHANNYA
+        if (pdfPath != null) savedBuku.setPdfPath(pdfPath);
 
-        if (pdfFile != null && !pdfFile.isEmpty()) {
-            if (!"application/pdf".equals(pdfFile.getContentType())) {
-                throw new IllegalArgumentException("File harus PDF.");
-            }
-            if (pdfFile.getSize() > 10 * 1024 * 1024) {
-                throw new IllegalArgumentException("Ukuran file PDF maksimal 10MB.");
-            }
-
-            Optional<Buku> existingBukuOptional = bukuRepository.findById(buku.getBukuId());
-            Buku existingBuku = existingBukuOptional.orElseThrow(() -> new IllegalArgumentException("Buku tidak ditemukan saat update path PDF."));
-
-
-            if (existingBuku.getPdfPath() != null && !existingBuku.getPdfPath().isEmpty()) {
-                String oldFileName = existingBuku.getPdfPath().substring(existingBuku.getPdfPath().lastIndexOf("/") + 1);
-                Path oldFilePath = PDF_DIR.resolve(oldFileName);
-                Files.deleteIfExists(oldFilePath);
-            }
-
-            String newFileName = existingBuku.getBukuId() + "_file.pdf";
-            Path newFilePath = PDF_DIR.resolve(newFileName);
-            Files.copy(pdfFile.getInputStream(), newFilePath, StandardCopyOption.REPLACE_EXISTING);
-            savedBuku.setPdfPath("/upload/pdfs/" + newFileName);
-        }
-
-        bukuRepository.save(savedBuku);
+        bukuRepository.save(savedBuku); // Update buku dengan path file
     }
 
+    @Transactional
     public Buku updateBuku(Buku updatedBuku, MultipartFile newCoverFile, MultipartFile newPdfFile) throws IOException {
         Buku existingBuku = bukuRepository.findById(updatedBuku.getBukuId())
                 .orElseThrow(() -> new IllegalArgumentException("Buku dengan ID " + updatedBuku.getBukuId() + " tidak ditemukan."));
 
+        // Validasi kode buku unik, kecuali jika itu kode buku yang sama dengan buku yang sedang diedit
+        if (!existingBuku.getKodeBuku().equalsIgnoreCase(updatedBuku.getKodeBuku()) && bukuRepository.existsByKodeBuku(updatedBuku.getKodeBuku())) {
+            throw new IllegalArgumentException("Kode buku '" + updatedBuku.getKodeBuku() + "' sudah ada. Harap gunakan kode unik lain.");
+        }
+
+        // Perbarui field yang diizinkan untuk diupdate
         existingBuku.setJudul(updatedBuku.getJudul());
+        existingBuku.setKodeBuku(updatedBuku.getKodeBuku());
         existingBuku.setIsbn(updatedBuku.getIsbn());
         existingBuku.setPenulis(updatedBuku.getPenulis());
         existingBuku.setPenerbit(updatedBuku.getPenerbit());
         existingBuku.setKategori(updatedBuku.getKategori());
         existingBuku.setStok(updatedBuku.getStok());
         existingBuku.setTanggalTerbit(updatedBuku.getTanggalTerbit());
+        existingBuku.setStatusBuku(updatedBuku.getStatusBuku());
+        existingBuku.setKondisi(updatedBuku.getKondisi()); 
 
-        if (newCoverFile != null && !newCoverFile.isEmpty()) {
-            String contentType = newCoverFile.getContentType();
-            if (contentType == null || (!"image/jpeg".equals(contentType) && !"image/png".equals(contentType))) {
-                throw new IllegalArgumentException("File cover harus JPG atau PNG.");
-            }
-            if (newCoverFile.getSize() > 10 * 1024 * 1024) {
-                throw new IllegalArgumentException("Ukuran file cover maksimal 10MB.");
-            }
-
-            if (existingBuku.getCoverPath() != null && !existingBuku.getCoverPath().isEmpty()) {
-                String oldFileName = existingBuku.getCoverPath().substring(existingBuku.getCoverPath().lastIndexOf("/") + 1);
-                Path oldFilePath = COVER_DIR.resolve(oldFileName);
-                Files.deleteIfExists(oldFilePath);
-            }
-
-            String extension = "image/jpeg".equals(contentType) ? "jpg" : "png";
-            String newFileName = existingBuku.getBukuId() + "_cover." + extension;
-            Path newFilePath = COVER_DIR.resolve(newFileName);
-            Files.copy(newCoverFile.getInputStream(), newFilePath, StandardCopyOption.REPLACE_EXISTING);
-            existingBuku.setCoverPath("/upload/images/" + newFileName);
+        // Handle file upload/replacement for cover
+        String newCoverPath = handleFileUpload(newCoverFile, existingBuku.getBukuId(), COVER_DIR, "cover", "image");
+        if (newCoverPath != null) {
+            deleteExistingFile(existingBuku.getCoverPath(), COVER_DIR);
+            existingBuku.setCoverPath(newCoverPath);
         }
 
-        if (newPdfFile != null && !newPdfFile.isEmpty()) {
-            if (!"application/pdf".equals(newPdfFile.getContentType())) {
-                throw new IllegalArgumentException("File harus PDF.");
-            }
-            if (newPdfFile.getSize() > 10 * 1024 * 1024) {
-                throw new IllegalArgumentException("Ukuran file PDF maksimal 10MB.");
-            }
-
-            if (existingBuku.getPdfPath() != null && !existingBuku.getPdfPath().isEmpty()) {
-                String oldFileName = existingBuku.getPdfPath().substring(existingBuku.getPdfPath().lastIndexOf("/") + 1);
-                Path oldFilePath = PDF_DIR.resolve(oldFileName);
-                Files.deleteIfExists(oldFilePath);
-            }
-
-            String newFileName = existingBuku.getBukuId() + "_file.pdf";
-            Path newFilePath = PDF_DIR.resolve(newFileName);
-            Files.copy(newPdfFile.getInputStream(), newFilePath, StandardCopyOption.REPLACE_EXISTING);
-            existingBuku.setPdfPath("/upload/pdfs/" + newFileName);
+        // PERBAIKAN DI SINI: expectedContentTypePrefix untuk PDF menjadi "application"
+        String newPdfPath = handleFileUpload(newPdfFile, existingBuku.getBukuId(), PDF_DIR, "file", "application"); // <--- INI PERUBAHANNYA
+        if (newPdfPath != null) {
+            deleteExistingFile(existingBuku.getPdfPath(), PDF_DIR);
+            existingBuku.setPdfPath(newPdfPath);
         }
 
         return bukuRepository.save(existingBuku);
+    }
+
+    // Helper method untuk upload file (menghindari duplikasi kode)
+    private String handleFileUpload(MultipartFile file, Long bukuId, Path directory, String type, String expectedContentTypePrefix) throws IOException {
+        if (file != null && !file.isEmpty()) {
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.startsWith(expectedContentTypePrefix)) {
+                // Perbaiki pesan error agar lebih spesifik
+                throw new IllegalArgumentException("File " + type + " harus berformat " + expectedContentTypePrefix + "/*."); // Contoh: image/* atau application/*
+            }
+            if (file.getSize() > 10 * 1024 * 1024) {
+                throw new IllegalArgumentException("Ukuran file " + type + " maksimal 10MB.");
+            }
+
+            String extension = "";
+            // Logika ekstensi perlu disempurnakan agar lebih robust
+            if (expectedContentTypePrefix.equals("image")) {
+                // Ambil ekstensi dari contentType aslinya, misal "image/png" -> "png"
+                extension = contentType.substring(contentType.lastIndexOf("/") + 1);
+                // Khusus untuk JPEG, kita bisa konversi ke jpg jika diperlukan atau biarkan jpeg
+                if ("jpeg".equals(extension)) {
+                    extension = "jpg";
+                }
+            } else if (expectedContentTypePrefix.equals("application")) {
+                extension = "pdf"; // Untuk PDF, kita tahu ekstensi pastinya
+            }
+            
+            String fileName = bukuId + "_" + type + "." + extension;
+            Path uploadPath = directory.resolve(fileName);
+            Files.copy(file.getInputStream(), uploadPath, StandardCopyOption.REPLACE_EXISTING);
+            return "/upload/" + (type.equals("cover") ? "images/" : "pdfs/") + fileName;
+        }
+        return null; // Tidak ada file baru diupload
+    }
+
+    // Helper method untuk menghapus file lama
+    private void deleteExistingFile(String filePath, Path directory) throws IOException {
+        if (filePath != null && !filePath.isEmpty()) {
+            String fileName = filePath.substring(filePath.lastIndexOf("/") + 1);
+            Path oldFilePath = directory.resolve(fileName);
+            Files.deleteIfExists(oldFilePath);
+        }
     }
 
     public Optional<Buku> getBukuById(Long id) {
@@ -156,6 +157,10 @@ public class BukuService {
         return bukuRepository.findAllByOrderByBukuIdAsc();
     }
 
+    public Page<Buku> getAllBukuPaginated(Pageable pageable) {
+        return bukuRepository.findAll(pageable);
+    }
+
     public List<Buku> searchBuku(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return bukuRepository.findAll();
@@ -163,6 +168,39 @@ public class BukuService {
         String lowerCaseKeyword = keyword.toLowerCase();
         return bukuRepository.findByJudulContainingIgnoreCaseOrPenulisContainingIgnoreCaseOrPenerbitContainingIgnoreCaseOrIsbnContainingIgnoreCase(
                 lowerCaseKeyword, lowerCaseKeyword, lowerCaseKeyword, lowerCaseKeyword);
+    }
+
+    // NEW: Method untuk pencarian buku dengan paginasi (ditambah Kode Buku)
+    public Page<Buku> searchBukuPaginated(String keyword, Pageable pageable) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return bukuRepository.findAll(pageable); // Jika keyword kosong, kembalikan semua dengan paginasi
+        }
+        String lowerCaseKeyword = keyword.toLowerCase();
+        return bukuRepository.findByJudulContainingIgnoreCaseOrPenulisContainingIgnoreCaseOrPenerbitContainingIgnoreCaseOrIsbnContainingIgnoreCaseOrKodeBukuContainingIgnoreCase(
+                lowerCaseKeyword, lowerCaseKeyword, lowerCaseKeyword, lowerCaseKeyword, lowerCaseKeyword, pageable); // Ditambahkan lowerCaseKeyword untuk kodeBuku
+    }
+
+    // NEW: Method untuk menghapus buku (beserta file terkait)
+    @Transactional
+    public void deleteBuku(Long bukuId) throws IOException {
+        Buku buku = bukuRepository.findById(bukuId)
+                .orElseThrow(() -> new IllegalArgumentException("Buku dengan ID " + bukuId + " tidak ditemukan."));
+
+        // Hapus file cover jika ada
+        if (buku.getCoverPath() != null && !buku.getCoverPath().isEmpty()) {
+            String fileName = buku.getCoverPath().substring(buku.getCoverPath().lastIndexOf("/") + 1);
+            Path filePath = COVER_DIR.resolve(fileName);
+            Files.deleteIfExists(filePath);
+        }
+
+        // Hapus file PDF jika ada
+        if (buku.getPdfPath() != null && !buku.getPdfPath().isEmpty()) {
+            String fileName = buku.getPdfPath().substring(buku.getPdfPath().lastIndexOf("/") + 1);
+            Path filePath = PDF_DIR.resolve(fileName);
+            Files.deleteIfExists(filePath);
+        }
+
+        bukuRepository.deleteById(bukuId);
     }
 
     public List<Buku> getRekomendasiBuku() {
